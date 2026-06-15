@@ -1,0 +1,64 @@
+# First Issue Message
+# File: .github/ISSUE_TEMPLATE/config.yml or use the "first interaction" GitHub Action
+# Action: actions/first-interaction@v1
+
+# --- .github/workflows/first-interaction.yml ---
+
+name: First Interaction Welcome
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          issue-message: |
+            Welcome, and thank you for opening your first issue here.
+
+            This repository holds the shared interfaces and contracts for the
+            Starisian Technologies platform. These are the types that every
+            service in the platform builds against — so changes here affect
+            everything downstream.
+
+            A few things to know:
+
+            - The interfaces in this repo are auto-synced from their source
+              repositories. If you're reporting a bug in an interface, the
+              fix likely needs to happen in the source repo, not here.
+            - Contract changes are treated as platform decisions. They go
+              through review before merging.
+            - If you're unsure whether something belongs here or in a
+              specific product repo, just ask — we'd rather help you find
+              the right place than have you guess.
+
+            We'll get back to you as soon as we can.
+
+          pr-message: |
+            Welcome, and thank you for your first pull request.
+
+            Before we review, a few things about how this repo works:
+
+            - Most files here are auto-synced from private source
+              repositories. If your change is to a synced file, it will be
+              overwritten on the next sync. Check the README to see which
+              folders are synced.
+            - If you're proposing a new interface or a change to an existing
+              contract, that's a platform-level decision — we take those
+              seriously and review carefully. Don't be discouraged if it
+              takes a little longer.
+            - Keep changes small and focused. One interface change per PR.
+            - All contributions are subject to our licensing terms. By
+              opening this PR, you confirm you have the right to contribute
+              this code.
+
+            Thank you for contributing. We'll review shortly.
