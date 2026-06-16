@@ -1,1 +1,0 @@
-# SPARXSTAR Sky Esu

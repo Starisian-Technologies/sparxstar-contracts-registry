@@ -1,1 +1,0 @@
-# SPARXSTAR IAM+C Envelope
