@@ -1,74 +1,26 @@
----
-applyTo: "**"
----
+# Agent Instructions — Platform Contracts
 
-# SPARXSTAR Platform Contracts — Agent Architecture
+## Critical rule
 
-## Repository Purpose
+DO NOT EDIT FILES IN THIS REPO.
 
-This repository is the **authoritative, versioned contract layer** for the Starisian Technologies SPARXSTAR platform. It defines the PHP interfaces and data contracts that all platform services must implement.
+Almost all files in `Contracts/` are auto-synced from private source
+repos by the `sparxstar-contract-sync` workflow. Any edit you make will
+be overwritten on the next sync. If an interface needs to change, change
+it in the SOURCE REPO (Helios, ESU, Sirus, etc.) and let the sync
+propagate the change.
 
-## Key Principles
+## What agents may do
 
-### ✓ Do This
+- Update the root README.md
+- Update the root composer.json (autoload mappings, package metadata)
+- Fix sync workflow issues
+- Add new product folders (with README placeholders) when a new product
+  begins publishing contracts
 
-- **Read** interfaces to understand platform architecture
-- **Reference** these contracts in your code and documentation
-- **Request changes** through the governance process (see Amendments below)
-- **Write consumers** that implement these interfaces correctly
+## What agents must NOT do
 
-### ✗ Do NOT Do This
-
-- **Edit files directly** — contracts are auto-synced from source service repositories
-- **Add implementation code** — this repo contains only interfaces and contracts
-- **Include dependencies** — contracts must be pure PHP with no external dependencies
-- **Store state** — contracts define behavior, not storage
-
-## Auto-Sync Architecture
-
-Each contract directory corresponds to a source service repository:
-
-| Contract                | Source Repo       | Syncs From                         |
-| ----------------------- | ----------------- | ---------------------------------- |
-| `/Contracts/DVE/**`     | sparxstar-dve     | Digital Voice Engine services      |
-| `/Contracts/IAMC/**`    | sparxstar-iamc    | Identity, Auth, Messaging, Context |
-| `/Contracts/IAtlas/**`  | sparxstar-iatlas  | Data structures and orchestration  |
-| `/Contracts/Starmus/**` | sparxstar-starmus | Audio service contracts            |
-
-When a source repository updates its contracts, this repo receives a notification via GitHub Actions and merges the changes automatically. **Never edit these files locally** — your changes will be overwritten on the next sync.
-
-## Contract Amendments
-
-All breaking or significant changes to contracts require:
-
-1. **Version Increment** — Follow semantic versioning
-2. **Amendment Notice** — Published summary of changes
-3. **Compatibility Statement** — Backward compatibility strategy
-4. **Governance Approval** — Review by Starisian Technologies
-
-## For Consumers (Integrators)
-
-When building against these contracts:
-
-1. **Use `composer require starisian/sparxstar-platform-contracts`** to pull the latest version
-2. **Import only interfaces** — never import concrete implementations
-3. **Implement interfaces completely** — partial implementation will fail in production
-4. **Test against the contract** — your code should work with any implementation
-
-## For Service Owners
-
-If you're maintaining one of the source services and need to update a contract:
-
-1. Edit the interface in your service repository
-2. Tag a release with semantic versioning
-3. Submit a pull request to sync to this repository
-4. Include amendment documentation
-5. Wait for governance review before merging
-
-## Governance & Licensing
-
-- **Proprietary** — Use is governed exclusively by the repository [LICENSE](LICENSE)
-
-## Questions?
-
-If you're unsure whether to edit a file or how to use a contract, **ask in the repository issues** before making changes.
+- Edit any PHP file under Contracts/. These are synced.
+- Add implementation code. This repo holds interfaces only.
+- Change namespace conventions. The canonical namespace is set by ADR-017.
+- Tag releases without owner approval.
