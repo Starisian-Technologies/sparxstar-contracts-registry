@@ -27,12 +27,8 @@ namespace SparxStar\Helios\Contracts;
 use Starisian\Sparxstar\Infrastructure\DTOs\AgreementResult;
 use Starisian\Sparxstar\Infrastructure\DTOs\ContextPulse;
 use Starisian\Sparxstar\Infrastructure\DTOs\ZonePrimitive;
-use SparxStar\Helios\Agreement\Enums\ResourceSensitivity;
-use SparxStar\Helios\Identity\HeliosIdentityContext;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+use SparxStar\Helios\Agreement\Enums\SPXResourceSensitivity;
+use SparxStar\Helios\Identity\SPXHeliosIdentityDataInterface;
 
 /**
  * Interface SPXHeliosClientInterface
@@ -57,7 +53,7 @@ interface SPXHeliosClientInterface {
 	 *
 	 * @param mixed               $proof       Governance proof (reserved; pass null if not applicable).
 	 * @param ContextPulse|null   $pulse       The ContextPulse for this request (null = absent).
-	 * @param ResourceSensitivity $sensitivity The sensitivity of the requested resource.
+	 * @param SPXResourceSensitivity $sensitivity The sensitivity of the requested resource.
 	 * @param int                 $now         Current Unix timestamp.
 	 * @param ZonePrimitive       $zone        Evaluation zone (EDGE or ORIGIN).
 	 * @return AgreementResult Exactly one of ALLOW_EDGE, ALLOW_ORIGIN, STEP_UP, DENY.
@@ -65,7 +61,7 @@ interface SPXHeliosClientInterface {
 	public function evaluate(
 		mixed $proof,
 		?ContextPulse $pulse,
-		ResourceSensitivity $sensitivity,
+		SPXResourceSensitivity $sensitivity,
 		int $now,
 		ZonePrimitive $zone
 	): AgreementResult;
@@ -77,12 +73,16 @@ interface SPXHeliosClientInterface {
 	 * NOT provide or override identity. Throws if no authenticated user is
 	 * present — callers must call validateSession() first.
 	 *
+	 * The returned object exposes only the fields safe for cross-service use
+	 * (contributor_ref, correlation_id, roles). WordPress-internal fields
+	 * (user_id, user_email) are not accessible via this interface.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @throws \RuntimeException If identity is missing or the user cannot be loaded.
-	 * @return HeliosIdentityContext Immutable identity value object.
+	 * @return SPXHeliosIdentityDataInterface Immutable cross-service identity contract.
 	 */
-	public function getIdentityContext(): HeliosIdentityContext;
+	public function getIdentityContext(): SPXHeliosIdentityDataInterface;
 
 	/**
 	 * Return the device context for the current request.

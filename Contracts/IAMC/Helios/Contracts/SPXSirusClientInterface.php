@@ -26,12 +26,8 @@ declare(strict_types=1);
 
 namespace SparxStar\Helios\Contracts;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
- * Interface SirusClientInterface
+ * Interface SPXSirusClientInterface
  *
  * Implemented by SirusAdapter, which wraps the Sirus Context plugin's API
  * via WordPress filters. Any class implementing this interface MUST NOT:
