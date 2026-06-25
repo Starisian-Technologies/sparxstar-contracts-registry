@@ -102,6 +102,9 @@ on:
         description: "Branch created in the registry for this proposal"
         value: ${{ jobs.propose.outputs.branch }}
 
+permissions:
+  contents: read
+
 jobs:
   propose:
     runs-on: ubuntu-latest

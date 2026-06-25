@@ -105,8 +105,9 @@ jobs:
           bash registry/scripts/fetch-contracts.sh
           # Ship the assertion script OUTSIDE the contracts dir so it is not parsed
           # as a contract, and so the unprivileged job runs the TRUSTED (registry)
-          # copy rather than anything from PR-head.
-          cp registry/scripts/contract-conformance.php "${{ github.workspace }}/artifact/contract-conformance.php"
+          # copy rather than anything from PR-head. Use the runner-provided
+          # GITHUB_WORKSPACE env var rather than a workflow expression in the script.
+          cp registry/scripts/contract-conformance.php "${GITHUB_WORKSPACE}/artifact/contract-conformance.php"
 
       - name: Upload contract artifact (contracts + trusted assertion script)
         uses: actions/upload-artifact@v7
@@ -126,6 +127,11 @@ jobs:
     permissions:
       contents: read
     steps:
+      # Checking out PR-head is the POINT of a conformance gate — and it is safe here
+      # by construction: this job holds NO App token and NO write permission
+      # (contents: read), persists no credentials, and only READS the code as data.
+      # CodeQL flags the pattern generically; the two-job split is the accepted
+      # mitigation. Callers MUST trigger on pull_request (not pull_request_target).
       - name: Checkout consumer PR-head (untrusted — data only)
         uses: actions/checkout@v7
         with:
@@ -138,12 +144,8 @@ jobs:
           name: contract-conformance-bundle
           path: bundle
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          coverage: none
-
+      # PHP is preinstalled on ubuntu runners; no 3rd-party setup action needed.
+      # The script only needs token_get_all (PHP 7+); it never executes PR-head.
       - name: Run contract conformance assertions
         env:
           MODE: ${{ inputs.enforcement_mode }}

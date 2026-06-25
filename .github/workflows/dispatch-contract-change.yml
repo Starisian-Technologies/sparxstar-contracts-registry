@@ -1,0 +1,123 @@
+name: Dispatch Contract Change
+
+# Change-dispatch. On a contract merge to main, notify the consumers bound to the
+# changed contract(s) so they re-run conformance instead of silently drifting.
+# The registry PUSHES the signal (repository_dispatch); consumers PULL the content
+# (their conformance run fetches the pinned contract fresh).
+#
+# TOKEN — REASONED, NOT READ THIS SESSION:
+#   A cross-repo repository_dispatch is a WRITE to another repo. composer-resolver
+#   is read-only and cannot dispatch-write, so this mints the contract-sync WRITE
+#   token (scoped to the target consumer repos). This follows the task's stated
+#   logic; the governance registry's adr-dispatch.yml was NOT available to read
+#   this session. VERIFY the mechanism + token against adr-dispatch.yml before tagging.
+#   (Also requires the contract-sync App to be installed on each consumer repo with
+#   permission to send repository_dispatch.)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Contracts/**"
+      - "MANIFEST.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dispatch-contract-change
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          fetch-tags: true
+
+      - name: Resolve changed contracts and their consumers
+        id: resolve
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, subprocess
+
+          # Changed files since the previous commit (best-effort on first push).
+          try:
+              base = subprocess.check_output(["git", "rev-parse", "HEAD~1"]).decode().strip()
+          except subprocess.CalledProcessError:
+              base = None
+          rng = [f"{base}", "HEAD"] if base else ["HEAD"]
+          diff = subprocess.check_output(["git", "diff", "--name-only", *rng]).decode().splitlines()
+
+          manifest = json.load(open("MANIFEST.json"))
+          contracts = manifest.get("contracts", {})
+
+          changed_ids, consumers = set(), set()
+          for path in diff:
+              for cid, c in contracts.items():
+                  base_path = c.get("path", "").rstrip("/")
+                  if base_path and (path == base_path or path.startswith(base_path + "/")):
+                      changed_ids.add(cid)
+                      for repo in c.get("consumers", []):
+                          consumers.add(repo)
+
+          # Short repo names (owner stripped) for the App-token `repositories` scope.
+          repo_short = sorted({r.split("/", 1)[1] for r in consumers if "/" in r})
+
+          out = os.environ["GITHUB_OUTPUT"]
+          with open(out, "a") as f:
+              f.write(f"changed={json.dumps(sorted(changed_ids))}\n")
+              f.write(f"consumers={json.dumps(sorted(consumers))}\n")
+              # repositories is a single-line GITHUB_OUTPUT value; the App-token
+              # action accepts a comma-separated list.
+              f.write(f"repositories={','.join(repo_short)}\n")
+              f.write(f"has_consumers={'true' if consumers else 'false'}\n")
+
+          print(f"Changed contracts: {sorted(changed_ids)}")
+          print(f"Consumers to notify: {sorted(consumers)}")
+          PYEOF
+
+      - name: Resolve recommended tag
+        id: ver
+        if: steps.resolve.outputs.has_consumers == 'true'
+        run: |
+          rec="$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)"
+          echo "recommended=${rec}" >> "$GITHUB_OUTPUT"
+
+      - name: Mint contract-sync WRITE token (scoped to consumer repos)
+        id: write-token
+        if: steps.resolve.outputs.has_consumers == 'true'
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.CONTRACT_SYNC_CLIENT_ID }}
+          private-key: ${{ secrets.CONTRACT_SYNC_PRIVATE_KEY }}
+          owner: Starisian-Technologies
+          repositories: ${{ steps.resolve.outputs.repositories }}
+
+      - name: Dispatch contract-changed to each consumer
+        if: steps.resolve.outputs.has_consumers == 'true'
+        env:
+          GH_TOKEN: ${{ steps.write-token.outputs.token }}
+          CONSUMERS: ${{ steps.resolve.outputs.consumers }}
+          CHANGED: ${{ steps.resolve.outputs.changed }}
+          RECOMMENDED: ${{ steps.ver.outputs.recommended }}
+          REGISTRY: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          payload="$(jq -n \
+            --argjson contracts "$CHANGED" \
+            --arg registry "$REGISTRY" \
+            --arg recommended "$RECOMMENDED" \
+            --arg sha "$SHA" \
+            '{registry:$registry, contracts:$contracts, recommended:$recommended, sha:$sha}')"
+          echo "$CONSUMERS" | jq -r '.[]' | while read -r consumer; do
+            echo "Dispatching contract-changed -> ${consumer}"
+            gh api --method POST "repos/${consumer}/dispatches" \
+              -f event_type=contract-changed \
+              --raw-field "client_payload=${payload}" \
+              || echo "::warning::dispatch to ${consumer} failed (App not installed or no permission?)"
+          done

@@ -24,6 +24,9 @@ on:
       - "Contracts/**"
       - "MANIFEST.json"
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
