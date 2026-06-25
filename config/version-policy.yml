@@ -1,0 +1,11 @@
+# SPARXSTAR Contracts Registry — version policy
+#
+# Single knob: `floor`. The lowest contract-registry tag a consumer is allowed
+# to pull. fetch-contracts.yml reads this floor, resolves the highest real
+# semver tag at runtime as the `recommended` version, and HARD-FAILS when a
+# requested contract-ref resolves below the floor or to a non-existent tag
+# (the "v3-bug guard": an invalid or missing ref must never silently degrade
+# to "latest").
+#
+# `floor` MUST name a tag that actually exists in this repository.
+floor: v1.0.0

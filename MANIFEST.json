@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0.0",
+  "registry": "Starisian-Technologies/sparxstar-platform-contracts",
+  "description": "Authoritative index of every contract distributed by this registry. fetch-contracts.yml, propose-contract.yml, dispatch-contract-change.yml and contract-conformance.yml all resolve paths, status and consumer bindings from this file. Edit this file (via PR) when a contract is added, promoted, or a consumer binding changes.",
+  "status_vocabulary": {
+    "draft": "Authored, not yet reviewed. Never fetched by consumers.",
+    "review": "Under registry-owner review. Proposable via propose-contract.yml; not fetchable.",
+    "ratified": "Reviewed and accepted. Fetchable by bound consumers. Changes require an amendment notice.",
+    "canonical": "The single authoritative contract for its domain. Fetchable. Forking it in a consumer is a conformance failure."
+  },
+  "binding_filter": ["canonical", "ratified"],
+  "contracts": {
+    "iamc/helios": {
+      "domain": "IAMC",
+      "slug": "Helios",
+      "path": "Contracts/IAMC/Helios",
+      "status": "canonical",
+      "since": "1.0.0",
+      "namespaces": [
+        "SparxStar\\Helios\\Agreement\\Enums",
+        "SparxStar\\Helios\\Consent",
+        "SparxStar\\Helios\\Contracts",
+        "SparxStar\\Helios\\Envelope",
+        "SparxStar\\Helios\\Identity"
+      ],
+      "symbols": [
+        "SparxStar\\Helios\\Contracts\\SPXHeliosClientInterface",
+        "SparxStar\\Helios\\Contracts\\SPXSirusClientInterface",
+        "SparxStar\\Helios\\Identity\\SPXHeliosIdentityDataInterface",
+        "SparxStar\\Helios\\Envelope\\SPXIamcEnvelope",
+        "SparxStar\\Helios\\Consent\\SPXConsentTier",
+        "SparxStar\\Helios\\Consent\\SPXConsentReference",
+        "SparxStar\\Helios\\Consent\\SPXRetentionClass",
+        "SparxStar\\Helios\\Agreement\\Enums\\SPXResourceSensitivity"
+      ],
+      "consumers": [
+        "Starisian-Technologies/helios-trust"
+      ]
+    },
+    "dve/sky-esu": {
+      "domain": "DVE",
+      "slug": "Sky-Esu",
+      "path": "Contracts/DVE/Sky-Esu",
+      "status": "canonical",
+      "since": "1.0.0",
+      "namespaces": [
+        "Starisian\\Sparxstar\\Sky\\Contract"
+      ],
+      "symbols": [
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXEsuInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXJobInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXJobFactoryInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXJobResultInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXTusUploadInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXBehistunClientInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXConsentResolverInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXCorrectionStoreInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXDictionaryClientInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXYahuraClientInterface"
+      ],
+      "consumers": []
+    },
+    "iamc/sirus": {
+      "domain": "IAMC",
+      "slug": "Sirus",
+      "path": "Contracts/IAMC/Sirus",
+      "status": "review",
+      "since": "1.0.0",
+      "namespaces": [],
+      "symbols": [],
+      "consumers": []
+    },
+    "iamc/ouroboros": {
+      "domain": "IAMC",
+      "slug": "Ouroboros",
+      "path": "Contracts/IAMC/Ouroboros",
+      "status": "review",
+      "since": "1.0.0",
+      "namespaces": [],
+      "symbols": [],
+      "consumers": []
+    },
+    "iatlas/dictionary": {
+      "domain": "IAtlas",
+      "slug": "Dictionary",
+      "path": "Contracts/IAtlas/Dictionary",
+      "status": "review",
+      "since": "1.0.0",
+      "namespaces": [],
+      "symbols": [],
+      "consumers": []
+    },
+    "iatlas/nodeengine": {
+      "domain": "IAtlas",
+      "slug": "NodeEngine",
+      "path": "Contracts/IAtlas/NodeEngine",
+      "status": "review",
+      "since": "1.0.0",
+      "namespaces": [],
+      "symbols": [],
+      "consumers": []
+    },
+    "iatlas/wordpad": {
+      "domain": "IAtlas",
+      "slug": "WordPad",
+      "path": "Contracts/IAtlas/WordPad",
+      "status": "review",
+      "since": "1.0.0",
+      "namespaces": [],
+      "symbols": [],
+      "consumers": []
+    },
+    "starmus": {
+      "domain": "Starmus",
+      "slug": "Starmus",
+      "path": "Contracts/Starmus",
+      "status": "review",
+      "since": "1.0.0",
+      "namespaces": [],
+      "symbols": [],
+      "consumers": []
+    }
+  }
+}
