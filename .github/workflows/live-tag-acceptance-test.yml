@@ -13,6 +13,11 @@ name: Live-Tag Acceptance Test
 on:
   workflow_dispatch:
 
+# contents: read (not empty) so the called conformance workflow can check out
+# PR-head; the caller's permissions cap the callee's.
+permissions:
+  contents: read
+
 jobs:
   acceptance-test:
     uses: Starisian-Technologies/sparxstar-platform-contracts/.github/workflows/contract-conformance.yml@test/live-tag-marker
