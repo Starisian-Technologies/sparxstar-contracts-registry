@@ -112,8 +112,7 @@ echo '{"registry":"'"$REGISTRY"'","contract_ref":"'"$CONTRACT_REF"'","recommende
 
 inject_header() {
   local file="$1" id="$2"
-  local rel="${file#"$OUT_DIR"/}"
-  local banner_php banner_md tmp
+  local tmp
   tmp="$(mktemp)"
   case "$file" in
     *.php)

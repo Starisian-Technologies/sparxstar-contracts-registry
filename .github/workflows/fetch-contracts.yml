@@ -77,28 +77,37 @@ jobs:
           owner: Starisian-Technologies
           repositories: sparxstar-platform-contracts
 
+      # The checkout is restricted to THIS registry (repository: is hardcoded) using
+      # our minted token, so a caller can only select refs that already exist in the
+      # registry — they cannot inject arbitrary code. persist-credentials: false keeps
+      # the token out of the local git config of the checked-out tree.
       - name: Checkout registry at contract-ref
         uses: actions/checkout@v7
         with:
           repository: Starisian-Technologies/sparxstar-platform-contracts
           ref: ${{ inputs.contract-ref }}
           token: ${{ steps.read-token.outputs.token }}
+          persist-credentials: false
           fetch-depth: 0
           fetch-tags: true
           path: registry
 
+      # All caller-controlled values are passed through env (never interpolated into
+      # the run: script) to avoid shell/script injection (CodeQL js/code-injection).
       - name: Resolve, version-check and fetch contracts
         id: fetch
         env:
+          AGENT_REF: ${{ inputs.agent-ref }}
+          RELEASE_REF: ${{ inputs.release-ref }}
           CONTRACT_REF: ${{ inputs.contract-ref }}
           REQUESTED_CONTRACTS: ${{ inputs.contracts }}
           CONSUMER: ${{ inputs.consumer != '' && inputs.consumer || github.repository }}
           OUT_DIR: ${{ github.workspace }}/fetched
           REGISTRY: Starisian-Technologies/sparxstar-platform-contracts
         run: |
-          echo "agent-ref:    ${{ inputs.agent-ref }}"
-          echo "contract-ref: ${{ inputs.contract-ref }}"
-          echo "release-ref:  ${{ inputs.release-ref }}"
+          printf 'agent-ref:    %s\n' "$AGENT_REF"
+          printf 'contract-ref: %s\n' "$CONTRACT_REF"
+          printf 'release-ref:  %s\n' "$RELEASE_REF"
           bash registry/scripts/fetch-contracts.sh
           echo "out-dir=${OUT_DIR}" >> "$GITHUB_OUTPUT"
 
@@ -125,26 +134,34 @@ jobs:
           owner: Starisian-Technologies
           repositories: sparxstar-platform-contracts
 
+      # All caller-controlled values flow through env, never interpolated into run:.
       - name: Report drift back to registry
         if: ${{ inputs.report-drift }}
         env:
           GH_TOKEN: ${{ steps.write-token.outputs.token }}
+          CONTRACT_REF: ${{ inputs.contract-ref }}
+          CONSUMER: ${{ inputs.consumer != '' && inputs.consumer || github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+          CALLER_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          REGISTRY: Starisian-Technologies/sparxstar-platform-contracts
         run: |
           set -euo pipefail
-          consumer="${{ inputs.consumer != '' && inputs.consumer || github.repository }}"
-          slug="$(echo "$consumer" | tr '/' '-')"
+          slug="$(printf '%s' "$CONSUMER" | tr '/' '-')"
           ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          run_url="${SERVER_URL}/${CALLER_REPO}/actions/runs/${RUN_ID}"
           report="$(jq -n \
-            --arg consumer "$consumer" \
-            --arg contract_ref "${{ inputs.contract-ref }}" \
+            --arg consumer "$CONSUMER" \
+            --arg contract_ref "$CONTRACT_REF" \
             --arg ts "$ts" \
-            --arg run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg run "$run_url" \
             '{consumer:$consumer, contract_ref:$contract_ref, reported_at:$ts, run_url:$run, drift: []}')"
+          existing_sha="$(gh api "repos/${REGISTRY}/contents/drift/${slug}.json" --jq .sha 2>/dev/null || true)"
           gh api \
             --method PUT \
-            "repos/Starisian-Technologies/sparxstar-platform-contracts/contents/drift/${slug}.json" \
-            -f message="chore: drift report from ${consumer}" \
+            "repos/${REGISTRY}/contents/drift/${slug}.json" \
+            -f message="chore: drift report from ${CONSUMER}" \
             -f "content=$(printf '%s' "$report" | base64 -w0)" \
             -f branch="main" \
-            -f "sha=$(gh api "repos/Starisian-Technologies/sparxstar-platform-contracts/contents/drift/${slug}.json" --jq .sha 2>/dev/null || true)" \
+            ${existing_sha:+-f "sha=${existing_sha}"} \
             || echo "::warning::drift report-back failed (non-fatal)"
