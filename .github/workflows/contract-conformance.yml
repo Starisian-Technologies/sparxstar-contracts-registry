@@ -26,9 +26,10 @@
 # Callers MUST invoke this on `pull_request` (NOT pull_request_target), so the
 # default checkout is PR-head and the default GITHUB_TOKEN is read-only.
 #
-# CAVEAT (no live read of the governance adr-enforce.yml this session): the
-# two-job shape is built from the task description, not copied from the live ADR
-# gate. Verify the privileged/unprivileged boundary against adr-enforce.yml before tagging.
+# Reconciled against the live governance adr-enforce.yml this session: the two-job
+# split, the composer-resolver READ token, and GITHUB_WORKFLOW_REF ref-resolution
+# match the proven ADR gate. (Difference by design: enforcement_mode defaults to
+# 'advisory' here per the contracts task, where the ADR gate defaults to 'gate'.)
 name: contract-conformance
 
 on:
