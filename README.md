@@ -19,7 +19,7 @@ No implementation. No WordPress dependencies. No secrets.
 bash
 
 ```
-composer require starisian/sparxstar-platform-contracts
+composer require starisian/sparxstar-contracts-registry
 ```
 
 ## Structure
@@ -75,11 +75,11 @@ exist before any consumer can call it.
 
 **GitHub App — `composer-resolver`.** The mint step calls
 `actions/create-github-app-token@v3` with `owner: Starisian-Technologies` and
-`repositories: sparxstar-platform-contracts`, and the resulting token is used to
+`repositories: sparxstar-contracts-registry`, and the resulting token is used to
 **clone this registry** at the pinned ref. So the App must be installed on the
 `Starisian-Technologies` org with **Contents: Read** access to
-`sparxstar-platform-contracts`. Verify in **Settings → GitHub Apps** that the
-`composer-resolver` installation actually includes `sparxstar-platform-contracts` —
+`sparxstar-contracts-registry`. Verify in **Settings → GitHub Apps** that the
+`composer-resolver` installation actually includes `sparxstar-contracts-registry` —
 an App existing is not the same as it being scoped to that repo, and a missing scope
 fails as `repository not found`, not a clear "install the App" message.
 
@@ -120,7 +120,7 @@ default it warns without blocking.
 The exact reusable-workflow reference a consumer writes:
 
 ```yaml
-uses: Starisian-Technologies/sparxstar-platform-contracts/.github/workflows/contract-conformance.yml@<ref>
+uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@<ref>
 ```
 
 **Live tag status (read this session via `git ls-remote origin 'refs/tags/v*'`): no
@@ -200,7 +200,7 @@ jobs:
   contract-conformance:
     # Substitute the ref once tags exist: pin @v1.0.0. Until then @main is the only
     # resolvable ref (mutable — not for production gating).
-    uses: Starisian-Technologies/sparxstar-platform-contracts/.github/workflows/contract-conformance.yml@main
+    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@main
     with:
       enforcement_mode: advisory   # advisory (warn) | gate (block) — earn the gate
       # contracts: "iamc/helios"   # optional: restrict to specific MANIFEST ids

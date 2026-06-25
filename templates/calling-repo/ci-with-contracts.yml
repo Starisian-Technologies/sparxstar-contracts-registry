@@ -19,7 +19,7 @@ jobs:
   # Prove this PR's code honors the contract you've adopted. Advisory first:
   # it WARNS until you flip enforcement_mode to gate. Earn the gate.
   contract-conformance:
-    uses: Starisian-Technologies/sparxstar-platform-contracts/.github/workflows/contract-conformance.yml@v1.0.0
+    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@v1.0.0
     with:
       contract-ref: v1.0.0          # the contract version you have adopted
       # contracts: "iamc/helios"    # optional: restrict to specific contract ids
@@ -30,7 +30,7 @@ jobs:
   # Optional: pull the contract as an artifact for your build/codegen. You never
   # commit it — see .gitignore-additions. Re-pull every run; never hold a stale copy.
   fetch-contract:
-    uses: Starisian-Technologies/sparxstar-platform-contracts/.github/workflows/fetch-contracts.yml@v1.0.0
+    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/fetch-contracts.yml@v1.0.0
     with:
       contract-ref: v1.0.0
       # report-drift: true          # optional: record your version tier in the registry

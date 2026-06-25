@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "registry": "Starisian-Technologies/sparxstar-platform-contracts",
+  "registry": "Starisian-Technologies/sparxstar-contracts-registry",
   "description": "Authoritative index of every contract distributed by this registry. fetch-contracts.yml, propose-contract.yml, dispatch-contract-change.yml and contract-conformance.yml all resolve paths, status and consumer bindings from this file. Edit this file (via PR) when a contract is added, promoted, or a consumer binding changes.",
   "status_vocabulary": {
     "draft": "Authored, not yet reviewed. Never fetched by consumers.",

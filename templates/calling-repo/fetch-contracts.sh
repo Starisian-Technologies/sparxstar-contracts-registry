@@ -17,7 +17,7 @@
 
 set -euo pipefail
 
-REGISTRY="${REGISTRY:-Starisian-Technologies/sparxstar-platform-contracts}"
+REGISTRY="${REGISTRY:-Starisian-Technologies/sparxstar-contracts-registry}"
 CONTRACT_REF="${CONTRACT_REF:-v1.0.0}"
 DEST="${DEST:-.contracts}"
 

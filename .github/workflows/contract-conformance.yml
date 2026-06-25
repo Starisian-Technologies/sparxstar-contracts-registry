@@ -107,12 +107,12 @@ jobs:
           client-id: ${{ vars.COMPOSER_RESOLVER_CLIENT_ID }}
           private-key: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
           owner: Starisian-Technologies
-          repositories: sparxstar-platform-contracts
+          repositories: sparxstar-contracts-registry
 
       - name: Checkout registry at pinned contract-ref
         uses: actions/checkout@v7
         with:
-          repository: Starisian-Technologies/sparxstar-platform-contracts
+          repository: Starisian-Technologies/sparxstar-contracts-registry
           ref: ${{ steps.ref.outputs.ref }}
           token: ${{ steps.read-token.outputs.token }}
           persist-credentials: false

@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   acceptance-test:
-    uses: Starisian-Technologies/sparxstar-platform-contracts/.github/workflows/contract-conformance.yml@test/live-tag-marker
+    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@test/live-tag-marker
     with:
       enforcement_mode: advisory
       contract-ref: test/live-tag-marker

@@ -80,7 +80,7 @@ jobs:
           client-id: ${{ vars.COMPOSER_RESOLVER_CLIENT_ID }}
           private-key: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
           owner: Starisian-Technologies
-          repositories: sparxstar-platform-contracts
+          repositories: sparxstar-contracts-registry
 
       # The checkout is restricted to THIS registry (repository: is hardcoded) using
       # our minted token, so a caller can only select refs that already exist in the
@@ -89,7 +89,7 @@ jobs:
       - name: Checkout registry at contract-ref
         uses: actions/checkout@v7
         with:
-          repository: Starisian-Technologies/sparxstar-platform-contracts
+          repository: Starisian-Technologies/sparxstar-contracts-registry
           ref: ${{ inputs.contract-ref }}
           token: ${{ steps.read-token.outputs.token }}
           persist-credentials: false
@@ -108,7 +108,7 @@ jobs:
           REQUESTED_CONTRACTS: ${{ inputs.contracts }}
           CONSUMER: ${{ inputs.consumer != '' && inputs.consumer || github.repository }}
           OUT_DIR: ${{ github.workspace }}/fetched
-          REGISTRY: Starisian-Technologies/sparxstar-platform-contracts
+          REGISTRY: Starisian-Technologies/sparxstar-contracts-registry
         run: |
           printf 'agent-ref:    %s\n' "$AGENT_REF"
           printf 'contract-ref: %s\n' "$CONTRACT_REF"
@@ -137,7 +137,7 @@ jobs:
           client-id: ${{ vars.CONTRACT_SYNC_CLIENT_ID }}
           private-key: ${{ secrets.CONTRACT_SYNC_PRIVATE_KEY }}
           owner: Starisian-Technologies
-          repositories: sparxstar-platform-contracts
+          repositories: sparxstar-contracts-registry
 
       # All caller-controlled values flow through env, never interpolated into run:.
       # The JSON keys here MUST match what collect-drift.yml consumes:
@@ -149,7 +149,7 @@ jobs:
           CALLER_REPO: ${{ github.repository }}
           REPORT_GATE: ${{ inputs.report-gate }}
           OUT_DIR: ${{ github.workspace }}/fetched
-          REGISTRY: Starisian-Technologies/sparxstar-platform-contracts
+          REGISTRY: Starisian-Technologies/sparxstar-contracts-registry
         run: |
           set -euo pipefail
           slug="$(printf '%s' "$CALLER_REPO" | tr '/' '-')"

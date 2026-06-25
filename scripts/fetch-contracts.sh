@@ -31,7 +31,7 @@ cd "$repo_root"
 : "${OUT_DIR:?OUT_DIR is required}"
 REQUESTED_CONTRACTS="${REQUESTED_CONTRACTS:-}"
 CONSUMER="${CONSUMER:-}"
-REGISTRY="${REGISTRY:-Starisian-Technologies/sparxstar-platform-contracts}"
+REGISTRY="${REGISTRY:-Starisian-Technologies/sparxstar-contracts-registry}"
 MANIFEST="MANIFEST.json"
 POLICY="config/version-policy.yml"
 

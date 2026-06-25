@@ -13,7 +13,7 @@ name: Propose Contract Update
 #
 #   jobs:
 #     propose-contract:
-#       uses: Starisian-Technologies/sparxstar-platform-contracts/.github/workflows/propose-contract.yml@v1.0.0
+#       uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/propose-contract.yml@v1.0.0
 #       with:
 #         product: iamc/helios
 #         contract-path: Contracts/IAMC/Helios/Contracts/SPXHeliosClientInterface.php
@@ -120,12 +120,12 @@ jobs:
           client-id: ${{ vars.CONTRACT_SYNC_CLIENT_ID }}
           private-key: ${{ secrets.CONTRACT_SYNC_PRIVATE_KEY }}
           owner: Starisian-Technologies
-          repositories: sparxstar-platform-contracts
+          repositories: sparxstar-contracts-registry
 
       - name: Checkout registry
         uses: actions/checkout@v7
         with:
-          repository: Starisian-Technologies/sparxstar-platform-contracts
+          repository: Starisian-Technologies/sparxstar-contracts-registry
           token: ${{ steps.write-token.outputs.token }}
           fetch-depth: 1
 
@@ -281,7 +281,7 @@ jobs:
             "${EXTRA_BODY}" > /tmp/pr-body.md
 
           PR_URL=$(gh pr create \
-            --repo Starisian-Technologies/sparxstar-platform-contracts \
+            --repo Starisian-Technologies/sparxstar-contracts-registry \
             --base main \
             --head "$BRANCH" \
             --title "contract: ${PRODUCT} update from ${SOURCE_REPO##*/}@${SHORT_SHA}" \

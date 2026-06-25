@@ -1,5 +1,5 @@
 {
-    "name": "starisian/sparxstar-platform-contracts",
+    "name": "starisian/sparxstar-contracts-registry",
     "description": "Shared PHP interfaces and contracts for the Starisian Technologies platform. No implementation, no dependencies.",
     "type": "library",
     "license": "proprietary",

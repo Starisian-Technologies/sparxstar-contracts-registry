@@ -45,7 +45,7 @@ jobs:
 
   propose:
     needs: render
-    uses: Starisian-Technologies/sparxstar-platform-contracts/.github/workflows/propose-contract.yml@v1.0.0
+    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/propose-contract.yml@v1.0.0
     with:
       product: ${{ github.event.inputs.product }}
       contract-path: ${{ github.event.inputs.contract-path }}
