@@ -54,7 +54,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+       # Guard: APIsec needs org secrets that aren't configured in this repo. Without
+       # this, the scan step fails with empty credentials on every run. Skip cleanly
+       # when unconfigured (job stays green); run the real scan once secrets exist.
+       - name: Check APIsec configuration
+         id: cfg
+         env:
+           APISEC_USERNAME: ${{ secrets.apisec_username }}
+         run: |
+           if [ -n "$APISEC_USERNAME" ]; then
+             echo "configured=true" >> "$GITHUB_OUTPUT"
+           else
+             echo "configured=false" >> "$GITHUB_OUTPUT"
+             echo "::notice::APIsec not configured (secrets.apisec_username empty) — skipping scan."
+           fi
        - name: APIsec scan
+         if: steps.cfg.outputs.configured == 'true'
          uses: apisec-inc/apisec-run-scan@025432089674a28ba8fb55f8ab06c10215e772ea
          with:
           # The APIsec username with which the scans will be executed
@@ -66,6 +81,7 @@ jobs:
           # The name of the sarif format result file The file is written only if this property is provided.
           sarif-result-file: "apisec-results.sarif"
        - name: Import results
+         if: steps.cfg.outputs.configured == 'true'
          uses: github/codeql-action/upload-sarif@v3
          with:
           sarif_file: ./apisec-results.sarif

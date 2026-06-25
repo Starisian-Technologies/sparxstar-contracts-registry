@@ -1,0 +1,15 @@
+# Config for actions/labeler@v4 (label: [globs] syntax).
+# Applied by .github/workflows/label.yml on pull_request.
+documentation:
+  - '**/*.md'
+github-actions:
+  - '.github/workflows/**'
+contracts:
+  - 'Contracts/**'
+scripts:
+  - 'scripts/**'
+templates:
+  - 'templates/**'
+manifest:
+  - 'MANIFEST.json'
+  - 'config/**'

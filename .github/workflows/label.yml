@@ -6,17 +6,22 @@
 # https://github.com/actions/labeler
 
 name: Labeler
-on: [pull_request_target]
+# pull_request (not pull_request_target): runs from the PR head, reads the config
+# from this repo, and avoids granting write to untrusted PR code. Requires
+# .github/labeler.yml (added). NOTE: this fix takes effect for PRs opened AFTER it
+# lands on main — a pull_request_target check already on main runs main's old version.
+on: [pull_request]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   label:
-
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-
     steps:
     - uses: actions/labeler@v4
+      # Don't fail the check if a target label doesn't exist yet — labeling is advisory.
+      continue-on-error: true
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
