@@ -1,0 +1,7 @@
+// markdownlint-cli2 configuration
+// https://github.com/DavidAnson/markdownlint-cli2#configuration
+{
+  // Contracts/ files are auto-synced from source repositories.
+  // Lint violations there must be fixed at the source, not here.
+  "ignores": ["Contracts/**", "node_modules/**"]
+}

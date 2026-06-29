@@ -7,13 +7,15 @@ environment.
 
 ## Reference repositories (read via MCP)
 
-- **ADR Registry:** `Starisian-Technologies/sparxstar-architecture-decision-record`
-  — decisions and invariants. Contracts must conform to platform law.
-- **Product Specs:** `Starisian-Technologies/sparxstar-product-technical--specifications`
-  — how products are specced. Contracts must match the interfaces
-  described in the specs.
 - **Coding Standards:** `Starisian-Technologies/starisian-technologies-coding-standards`
-  — naming conventions (ADR-017 SPX prefix), namespace rules.
+  — verified public standards repo for naming conventions (ADR-017 SPX
+  prefix), namespace rules, and enforcement posture.
+- **ADR Registry:** resolve the current Starisian architecture decision record
+  repository live in this run before relying on it. If you cannot open it, stop
+  and flag uncertainty instead of guessing a repo name.
+- **Product Specs:** resolve the current Starisian product technical
+  specifications repository live in this run before relying on it. If you
+  cannot open it, stop and flag uncertainty instead of guessing a repo name.
 
 ## Your role
 

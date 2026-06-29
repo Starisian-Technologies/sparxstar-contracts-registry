@@ -8,7 +8,8 @@
     },
     "autoload": {
         "psr-4": {
-            "SparxStar\\Contracts\\": "contracts/"
+            "SparxStar\\Helios\\": "Contracts/IAMC/Helios/",
+            "Starisian\\Sparxstar\\Sky\\Contract\\": "Contracts/DVE/Sky-Esu/"
         }
     },
     "minimum-stability": "stable"

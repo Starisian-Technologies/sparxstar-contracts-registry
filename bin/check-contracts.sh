@@ -28,7 +28,14 @@ report_missing() {
 
 mapfile -t missing_namespace < <(grep -L '^namespace ' "${contract_files[@]}" || true)
 mapfile -t missing_strict_types < <(grep -L 'declare(strict_types=1);' "${contract_files[@]}" || true)
-mapfile -t missing_interface_keyword < <(grep -L 'interface ' "${contract_files[@]}" || true)
+# Contracts are interfaces, backed enums, or final value objects — all are valid.
+# A file is valid if it contains any of: interface, enum, class.
+missing_type_keyword=()
+for file in "${contract_files[@]}"; do
+    if ! grep -qE '\b(interface|enum|class)\b' "$file"; then
+        missing_type_keyword+=("$file")
+    fi
+done
 malformed_contract_filenames=()
 
 for file in "${contract_files[@]}"; do
@@ -40,15 +47,18 @@ done
 
 report_missing "Contract files missing a namespace declaration:" "${missing_namespace[@]}"
 report_missing "Contract files missing strict types:" "${missing_strict_types[@]}"
-report_missing "Contract files missing an interface declaration:" "${missing_interface_keyword[@]}"
+report_missing "Contract files missing a type declaration (interface, enum, or class):" "${missing_type_keyword[@]}"
 report_missing "Contract files with malformed PHP filenames:" "${malformed_contract_filenames[@]}"
 
+# Only require README.md at the top-level product directories (one level under Contracts/).
+# Sub-package directories (e.g. Consent/, Identity/) are synced from source repos and
+# are not required to carry their own README here.
 missing_readmes=()
 while IFS= read -r -d '' directory; do
     if [[ ! -f "$directory/README.md" ]]; then
         missing_readmes+=("$directory")
     fi
-done < <(find Contracts -type d -print0 | sort -z)
+done < <(find Contracts -mindepth 1 -maxdepth 2 -type d -print0 | sort -z)
 
 report_missing "Contract directories missing a README.md:" "${missing_readmes[@]}"
 

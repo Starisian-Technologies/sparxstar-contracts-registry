@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD033 MD036 -->
+
 <img width="1280" height="640" alt="SPARXSTAR Banners-8 (3)" src="https://github.com/user-attachments/assets/f6c7185e-a597-439f-98e6-7fe817eea620" />
 
 # SPARXSTAR Platform Contracts
@@ -16,40 +18,43 @@ No implementation. No WordPress dependencies. No secrets.
 
 ## Install
 
-bash
-
-```
+```bash
 composer require starisian/sparxstar-contracts-registry
 ```
 
 ## Structure
 
-```
-src/
-  Helios/           # Identity, consent, retention
-  Sirus/            # Context, trust, authority (when added)
-  Ouroboros/         # Integrity, signing (when added)
+```text
+Contracts/
+  IAMC/
+    Helios/           # Identity, consent, retention (canonical)
+    Sirus/            # Context, trust, authority (review)
+    Ouroboros/        # Integrity, signing (review)
+  DVE/
+    Sky-Esu/          # ESU orchestration, jobs, translation (canonical)
+  IAtlas/             # Dictionary, NodeEngine, WordPad (review)
+  Starmus/            # Starmus contracts (review)
 ```
 
-Each folder is auto-synced from its source repo on merge to main. Do not edit files here directly --- changes will be overwritten on the next sync.
+Each folder is auto-synced from its source repo on merge to main. Do not edit
+files here directly — changes will be overwritten on the next sync.
 
 ## Usage
 
-php
-
-```
-use SparxStar\Contracts\Helios\SPXHeliosClientInterface;
-use SparxStar\Contracts\Helios\SPXConsentReference;
-use SparxStar\Contracts\Helios\SPXRetentionClass;
-use SparxStar\Contracts\Helios\SPXConsentTier;
-use SparxStar\Contracts\Helios\SPXIamcEnvelope;
+```php
+use SparxStar\Helios\Contracts\SPXHeliosClientInterface;
+use SparxStar\Helios\Consent\SPXConsentReference;
+use SparxStar\Helios\Consent\SPXRetentionClass;
+use SparxStar\Helios\Consent\SPXConsentTier;
+use SparxStar\Helios\Envelope\SPXIamcEnvelope;
+use Starisian\Sparxstar\Sky\Contract\SPXEsuInterface;
 ```
 
 ---
 
 ## Amendments
 
-All changes to thse contracts require:
+All changes to these contracts require:
 
 1. A version increment
 2. A published amendment notice
@@ -123,28 +128,24 @@ The exact reusable-workflow reference a consumer writes:
 uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@<ref>
 ```
 
-**Live tag status (read this session via `git ls-remote origin 'refs/tags/v*'`): no
-version tags exist yet.** There is no `v1.0.0` and no `v1` on the remote at the time
-of writing. Until the registry owner cuts them:
+**Live tag status:** `v1.0.0` and `v1` both resolve today; `v1.0.0` is the immutable
+release pin, while `v1` is the moving major alias currently pointing at the same commit.
 
-- The **intended** pins, once they exist, are `@v1.0.0` (immutable release — pin this)
-  and `@v1` (a moving alias on the same commit). Pin `@v1.0.0` so a re-tag can't change
-  the gate under you.
-- Today, the only resolvable ref is `@main` (mutable). It works for trying the gate but
-  is **not** suitable for a production gate — it can change without notice.
+- Use `@v1.0.0` for production conformance gating (immutable).
+- Use `@v1` only when you intentionally accept movement within major version 1.
+- `@main` remains mutable and is for experimentation, not production pinning.
 
-Do not pin `@v1.0.0` before it is tagged: the privileged fetch hard-fails on an
-unresolvable ref (the v3-bug guard), so a premature pin will fail the gate.
+The gate hard-fails unresolvable refs (v3-bug guard), so only pin refs that exist.
 
 ## 3. Inputs (from the gate's `on.workflow_call.inputs`)
 
-| Input | Required | Default | Purpose / valid values |
-|---|---|---|---|
-| `contract-ref` | no | `""` (derived from the `@<ref>` on your `uses:` line) | the registry ref to check against; any tag/branch/SHA string. Explicit value wins over the derived one. |
-| `contracts` | no | `""` (all you are party to) | space/comma list of MANIFEST contract ids to check |
-| `consumer` | no | `""` (the caller repo) | `owner/repo`; selects which contracts bind |
-| `consumer-path` | no | `"."` (whole repo) | subdirectory of your PR-head to check |
-| `enforcement_mode` | no | `"advisory"` | `advisory` (warn only) or `gate` (block on failure) |
+| Input              | Required | Default                                               | Purpose / valid values                                                                                  |
+| ------------------ | -------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `contract-ref`     | no       | `""` (derived from the `@<ref>` on your `uses:` line) | the registry ref to check against; any tag/branch/SHA string. Explicit value wins over the derived one. |
+| `contracts`        | no       | `""` (all you are party to)                           | space/comma list of MANIFEST contract ids to check                                                      |
+| `consumer`         | no       | `""` (the caller repo)                                | `owner/repo`; selects which contracts bind                                                              |
+| `consumer-path`    | no       | `"."` (whole repo)                                    | subdirectory of your PR-head to check                                                                   |
+| `enforcement_mode` | no       | `"advisory"`                                          | `advisory` (warn only) or `gate` (block on failure)                                                     |
 
 None of the inputs are required — the gate runs with an empty `with:` if you pin the
 ref on the `uses:` line.
@@ -158,8 +159,8 @@ The gate's `on.workflow_call.secrets` block declares exactly **one** secret:
 Pass it by name:
 
 ```yaml
-    secrets:
-      COMPOSER_RESOLVER_PRIVATE_KEY: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
+secrets:
+  COMPOSER_RESOLVER_PRIVATE_KEY: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
 ```
 
 **`secrets: inherit` is prohibited** — it forwards every caller secret into the
@@ -202,7 +203,7 @@ jobs:
     # resolvable ref (mutable — not for production gating).
     uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@main
     with:
-      enforcement_mode: advisory   # advisory (warn) | gate (block) — earn the gate
+      enforcement_mode: advisory # advisory (warn) | gate (block) — earn the gate
       # contracts: "iamc/helios"   # optional: restrict to specific MANIFEST ids
       # consumer-path: "src"       # optional: check only a subdirectory
     secrets:
