@@ -17,9 +17,14 @@ published from source repos and will be overwritten by sync.
   `.github/workflows/**`, root governance docs (`README.md`, `SECURITY.md`,
   `LICENSE`, `OWNERS`, `.github/CODEOWNERS`).
 - **Platform sources of truth to align against:**
-  - `Starisian-Technologies/sparxstar-architecture-decision-record`
-  - `Starisian-Technologies/sparxstar-product-technical--specifications`
-  - `Starisian-Technologies/starisian-technologies-coding-standards`
+  - verified public standards repo:
+    `Starisian-Technologies/starisian-technologies-coding-standards`
+  - current Starisian architecture decision record registry — resolve the live
+    repository identifier during this run; if you cannot open it, stop and flag
+    uncertainty rather than substituting a guessed repo name
+  - current Starisian product technical specifications registry — resolve the
+    live repository identifier during this run; if you cannot open it, stop and
+    flag uncertainty rather than substituting a guessed repo name
 - **Decision ledger file:** `GOVERNANCE-LEDGER.md` (**created by governance
   agent because none existed previously**).
 - **Required review authority:** `@MaximillianGroup` (from `.github/CODEOWNERS`

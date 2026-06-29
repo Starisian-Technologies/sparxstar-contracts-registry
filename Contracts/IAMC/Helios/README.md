@@ -10,10 +10,15 @@ Helios is the SPARXSTAR identity and access management contract domain. It defin
 | ----------------- | ------------------------------------- |
 | Status            | `canonical`                           |
 | Since             | 1.0.0                                 |
-| Root namespace    | `SparxStar\Helios`                    |
+| PSR-4 root        | `SparxStar\Helios\`                   |
 | Binding consumers | `Starisian-Technologies/helios-trust` |
 
 ## Contract Surface
+
+Synced Helios files declare concrete sub-namespaces under the
+`SparxStar\Helios\` PSR-4 root, including `Contracts`, `Consent`, `Envelope`,
+`Identity`, and `Agreement\Enums`. Import the concrete FQCN that matches the
+file you consume.
 
 | Contract                         | Kind         | Purpose                                                                             |
 | -------------------------------- | ------------ | ----------------------------------------------------------------------------------- |
