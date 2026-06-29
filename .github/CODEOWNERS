@@ -1,0 +1,23 @@
+# CODEOWNERS — mandatory review assignments for this repository.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: all changes require owner review.
+* @MaximillianGroup
+
+# Contracts are platform decisions — owner review required.
+Contracts/ @MaximillianGroup
+
+# MANIFEST.json is the authoritative contract index — owner review required.
+MANIFEST.json @MaximillianGroup
+
+# Version policy controls what consumers may pin — owner review required.
+config/ @MaximillianGroup
+
+# GitHub Actions workflows — security-sensitive; owner review required.
+.github/workflows/ @MaximillianGroup
+
+# Repository governance and security policy — owner review required.
+SECURITY.md @MaximillianGroup
+LICENSE @MaximillianGroup
+OWNERS @MaximillianGroup
+CODEOWNERS @MaximillianGroup

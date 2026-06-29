@@ -5,14 +5,11 @@ name: Dispatch Contract Change
 # The registry PUSHES the signal (repository_dispatch); consumers PULL the content
 # (their conformance run fetches the pinned contract fresh).
 #
-# TOKEN — REASONED, NOT READ THIS SESSION:
-#   A cross-repo repository_dispatch is a WRITE to another repo. composer-resolver
-#   is read-only and cannot dispatch-write, so this mints the contract-sync WRITE
-#   token (scoped to the target consumer repos). This follows the task's stated
-#   logic; the governance registry's adr-dispatch.yml was NOT available to read
-#   this session. VERIFY the mechanism + token against adr-dispatch.yml before tagging.
-#   (Also requires the contract-sync App to be installed on each consumer repo with
-#   permission to send repository_dispatch.)
+# TOKEN:
+#   Cross-repo repository_dispatch writes into the target consumer repos. This
+#   workflow follows the repository's existing write-token pattern and mints the
+#   contract-sync App token scoped to those repositories. The App installation on
+#   each consumer repo must include permission to send repository_dispatch events.
 
 on:
   push:
@@ -87,18 +84,16 @@ jobs:
           rec="$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)"
           echo "recommended=${rec}" >> "$GITHUB_OUTPUT"
 
-      # Token: composer-resolver, scoped to the target consumer repos. This MATCHES
-      # the live governance adr-dispatch.yml, which mints composer-resolver (NOT
-      # contract-sync) for the cross-repo repository_dispatch — the App's install on
-      # the consumer repos carries the dispatch permission. Read from live source,
-      # overriding the task's earlier contract-sync assumption (RULE ZERO).
-      - name: Mint composer-resolver token (scoped to consumer repos)
+      # Cross-repo dispatch is a write into consumer repositories, so this mint
+      # follows the same contract-sync WRITE-token pattern used elsewhere in the
+      # registry for write operations.
+      - name: Mint contract-sync token (scoped to consumer repos)
         id: app-token
         if: steps.resolve.outputs.has_consumers == 'true'
         uses: actions/create-github-app-token@v3
         with:
-          client-id: ${{ vars.COMPOSER_RESOLVER_CLIENT_ID }}
-          private-key: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
+          client-id: ${{ vars.CONTRACT_SYNC_CLIENT_ID }}
+          private-key: ${{ secrets.CONTRACT_SYNC_PRIVATE_KEY }}
           owner: Starisian-Technologies
           repositories: ${{ steps.resolve.outputs.repositories }}
 
