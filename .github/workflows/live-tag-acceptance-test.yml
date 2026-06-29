@@ -3,15 +3,20 @@ name: Live-Tag Acceptance Test
 # Mirror of the governance registry's live-tag-acceptance-test.yml.
 # Proves that contract-conformance.yml reads the PINNED ref's contract (not main's).
 #
-# Calls the conformance gate at a marker ref and in advisory mode. The marker ref
-# should carry a contract shape that differs from main; if the gate's output reflects
-# the marker (not main), the pinned-ref checkout + v3-bug guard are working.
+# Manual operator run: pass a marker ref that already exists and differs from main.
+# If the gate's output reflects the marker (not main), the pinned-ref checkout +
+# v3-bug guard are working.
 #
 # Note: GitHub rejects tag pushes containing workflow files without the 'workflows'
 # permission scope, so a branch ref tests the same code path as a tag.
 
 on:
   workflow_dispatch:
+    inputs:
+      marker_ref:
+        description: "Existing branch/tag/SHA carrying the marker contract shape"
+        required: true
+        type: string
 
 # contents: read (not empty) so the called conformance workflow can check out
 # PR-head; the caller's permissions cap the callee's.
@@ -19,10 +24,29 @@ permissions:
   contents: read
 
 jobs:
+  validate-marker-ref:
+    runs-on: ubuntu-latest
+    outputs:
+      marker_ref: ${{ steps.out.outputs.marker_ref }}
+    steps:
+      - name: Validate marker ref exists
+        env:
+          REF: ${{ inputs.marker_ref }}
+        run: |
+          set -euo pipefail
+          if ! git ls-remote --exit-code "https://github.com/${GITHUB_REPOSITORY}.git" "${REF}" >/dev/null 2>&1; then
+            echo "::error::marker_ref '${REF}' does not exist in ${GITHUB_REPOSITORY}. Create/publish the marker ref first."
+            exit 1
+          fi
+      - name: Export marker ref
+        id: out
+        run: echo "marker_ref=${{ inputs.marker_ref }}" >> "$GITHUB_OUTPUT"
+
   acceptance-test:
-    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@test/live-tag-marker
+    needs: validate-marker-ref
+    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@main
     with:
       enforcement_mode: advisory
-      contract-ref: test/live-tag-marker
+      contract-ref: ${{ needs.validate-marker-ref.outputs.marker_ref }}
     secrets:
       COMPOSER_RESOLVER_PRIVATE_KEY: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}

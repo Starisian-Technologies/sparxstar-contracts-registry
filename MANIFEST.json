@@ -58,7 +58,10 @@
         "Starisian\\Sparxstar\\Sky\\Contract\\SPXDictionaryClientInterface",
         "Starisian\\Sparxstar\\Sky\\Contract\\SPXYahuraClientInterface"
       ],
-      "consumers": []
+      "consumers": [],
+      "open_items": [
+        "Identify and bind DVE Sky-Esu consumer repositories so dispatch-contract-change.yml can notify downstreams."
+      ]
     },
     "iamc/sirus": {
       "domain": "IAMC",

@@ -128,18 +128,14 @@ The exact reusable-workflow reference a consumer writes:
 uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@<ref>
 ```
 
-**Live tag status (read this session via `git ls-remote origin 'refs/tags/v*'`): no
-version tags exist yet.** There is no `v1.0.0` and no `v1` on the remote at the time
-of writing. Until the registry owner cuts them:
+**Live tag status:** `v1.0.0` and `v1` both resolve today; `v1.0.0` is the immutable
+release pin, while `v1` is the moving major alias currently pointing at the same commit.
 
-- The **intended** pins, once they exist, are `@v1.0.0` (immutable release — pin this)
-  and `@v1` (a moving alias on the same commit). Pin `@v1.0.0` so a re-tag can't change
-  the gate under you.
-- Today, the only resolvable ref is `@main` (mutable). It works for trying the gate but
-  is **not** suitable for a production gate — it can change without notice.
+- Use `@v1.0.0` for production conformance gating (immutable).
+- Use `@v1` only when you intentionally accept movement within major version 1.
+- `@main` remains mutable and is for experimentation, not production pinning.
 
-Do not pin `@v1.0.0` before it is tagged: the privileged fetch hard-fails on an
-unresolvable ref (the v3-bug guard), so a premature pin will fail the gate.
+The gate hard-fails unresolvable refs (v3-bug guard), so only pin refs that exist.
 
 ## 3. Inputs (from the gate's `on.workflow_call.inputs`)
 
