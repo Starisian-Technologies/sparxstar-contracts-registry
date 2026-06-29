@@ -32,6 +32,18 @@ After approval in the source repository, the contracts should be synchronized in
 - preserve the proprietary licensing posture of the repository
 - update documentation when repository behavior changes
 
+## Accuracy-First Governance Standard
+
+When correctness and speed are in tension, choose correctness.
+
+- use verification-first workflows instead of speed-first workflows
+- gather and cross-check evidence before making recommendations
+- apply strict confidence thresholds and state uncertainty explicitly
+- run complete validation (lint, checks, security, review) before handoff
+- favor conservative, low-risk edits over broad fast changes
+- optimize guidance for correctness and traceability first, speed second
+- store and reuse verified conventions to improve future accuracy
+
 ## Local Validation
 
 Run these checks before opening a pull request:
