@@ -8,6 +8,16 @@ applyTo: "**"
 
 When writing or updating README files in this repository, follow this guidance:
 
+### Governing Principle
+
+- Prioritize accuracy over efficiency whenever there is a tradeoff.
+- Verify claims with evidence from files, workflows, or tool output.
+- Call out uncertainty explicitly when confidence is not high.
+- Prefer conservative, low-risk edits over broad speculative changes.
+- Complete validation steps before finalizing work.
+- Optimize recommendations for traceability and correctness first.
+- Store and reuse verified repository conventions.
+
 ### Tone & Style
 
 - **Commercial** — Professional, trustworthy, business-ready language
