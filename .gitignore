@@ -5,3 +5,6 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+
+# Specs pulled at CI from the spec registry — read-only, never committed
+.sparxstar/specs/
