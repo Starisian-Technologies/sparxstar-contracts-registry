@@ -77,9 +77,11 @@ report_missing "Contract directories missing a README.md:" "${missing_readmes[@]
 # repo (synced files must not be edited here) and are tracked in MANIFEST.json
 # open_items. Surface them on every run so they are not forgotten.
 non_canonical_namespace=()
+# Anchored regex (\\ matches one literal backslash) — unambiguous, no glob-escaping pitfalls.
+canonical_ns_re='^namespace Starisian\\Sparxstar\\'
 for file in "${contract_files[@]}"; do
     ns_line="$(grep -m1 '^namespace ' "$file" || true)"
-    if [[ -n "$ns_line" && "$ns_line" != 'namespace Starisian\Sparxstar\'* ]]; then
+    if [[ -n "$ns_line" && ! "$ns_line" =~ $canonical_ns_re ]]; then
         non_canonical_namespace+=("$file")
     fi
 done

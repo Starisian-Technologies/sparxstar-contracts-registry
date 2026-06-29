@@ -9,6 +9,9 @@
         "check:contracts": "bash ./bin/check-contracts.sh",
         "check": "npm run lint:md && npm run format:md:check && npm run check:contracts"
     },
+    "engines": {
+        "node": ">=20"
+    },
     "devDependencies": {
         "markdownlint-cli2": "^0.22.1",
         "prettier": "^3.5.3"
