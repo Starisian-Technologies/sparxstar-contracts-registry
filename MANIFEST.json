@@ -35,6 +35,9 @@
       ],
       "consumers": [
         "Starisian-Technologies/helios-trust"
+      ],
+      "open_items": [
+        "Namespace deviation: synced files declare 'SparxStar\\Helios' but the canonical convention is 'Starisian\\Sparxstar\\Helios'. Fix is upstream in the Helios source repo (Starisian-Technologies/helios-trust) — rename the namespace there and let the sync propagate. Do not edit synced files here; manual edits are overwritten on the next sync, and composer.json autoload + these manifest namespaces/symbols must follow the source rename."
       ]
     },
     "dve/sky-esu": {
@@ -60,7 +63,8 @@
       ],
       "consumers": [],
       "open_items": [
-        "Identify and bind DVE Sky-Esu consumer repositories so dispatch-contract-change.yml can notify downstreams."
+        "Identify and bind DVE Sky-Esu consumer repositories so dispatch-contract-change.yml can notify downstreams.",
+        "Naming mismatch: the namespace product segment is 'Sky' (Starisian\\Sparxstar\\Sky\\Contract) while the directory/slug is 'Sky-Esu', and the namespace adds a '\\Contract' segment beyond the 'Starisian\\Sparxstar\\{Product}' convention. Reconciling Sky vs Sky-Esu is an ESU source-repo decision; flag upstream rather than editing synced files here."
       ]
     },
     "iamc/sirus": {
