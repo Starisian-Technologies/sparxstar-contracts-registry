@@ -24,20 +24,34 @@ composer require starisian/sparxstar-contracts-registry
 
 ## Structure
 
+Contracts are stored flat, one folder per source repository, keyed by the
+repository's own name:
+
 ```text
 Contracts/
-  IAMC/
-    Helios/           # Identity, consent, retention (canonical)
-    Sirus/            # Context, trust, authority (review)
-    Ouroboros/        # Integrity, signing (review)
-  DVE/
-    Sky-Esu/          # ESU orchestration, jobs, translation (canonical)
-  IAtlas/             # Dictionary, NodeEngine, WordPad (review)
-  Starmus/            # Starmus contracts (review)
+  {repo-name}/        # e.g. Contracts/sparxstar-helios-core/
+    README.md
+    (interface / enum / value-object files)
 ```
+
+There is no group/domain lookup. Each repository derives its own path from its
+own name, so none of the registries need to know repo names in advance. The
+first sync from any repo creates `Contracts/{repo-name}/` automatically (the
+sync job runs `mkdir -p` before copying).
 
 Each folder is auto-synced from its source repo on merge to main. Do not edit
 files here directly — changes will be overwritten on the next sync.
+
+> **Migration note:** some folders predate this convention and are still nested
+> under the old group/product layout (e.g. `Contracts/IAMC/Helios/`,
+> `Contracts/DVE/Sky-Esu/`). Moving one to `Contracts/{repo-name}/` is a single
+> coordinated change — it is **not** automatic. In one commit: move the folder,
+> update the `composer.json` autoload path, update the contract's `MANIFEST.json`
+> entry, and delete the old folder. Until that is done, `composer.json` and
+> `MANIFEST.json` keep pointing at the legacy path, so a source repo that syncs
+> to the new flat path before the registry is updated would have its files land
+> in a folder nobody resolves — a silent no-op. Flip the source repo's sync
+> target and the registry metadata together.
 
 ## Usage
 
