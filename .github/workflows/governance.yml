@@ -25,7 +25,7 @@ jobs:
   pull-spec:
     uses: Starisian-Technologies/sparxstar-product-specification-registry/.github/workflows/fetch-specs.yml@v1.0.0
     with:
-      specs: "contracts-registry"
+      specs: "sparxstar-contracts-registry"
       agent-ref: main
       contract-ref: "v1.0.0"
     secrets:
@@ -76,12 +76,13 @@ jobs:
         if: steps.check.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
-          SPEC_KEY: "contracts-registry"
-          SPEC_DOMAIN: "infrastructure"
+          # Flat repo-name scheme: every repo's spec lives at
+          # specs/{repo-name}/{repo-name}-tech-spec.md — no domain lookup.
+          SPEC_KEY: ${{ github.event.repository.name }}
         run: |
           REGISTRY="Starisian-Technologies/sparxstar-product-specification-registry"
           BRANCH="propose/${SPEC_KEY}-$(date +%Y%m%d-%H%M%S)"
-          TARGET="specs/${SPEC_DOMAIN}/${SPEC_KEY}/${SPEC_KEY}-tech-spec.md"
+          TARGET="specs/${SPEC_KEY}/${SPEC_KEY}-tech-spec.md"
 
           # Authenticate git via gh's credential helper so the token never
           # appears in clone/push arguments or logs (CWE-532).

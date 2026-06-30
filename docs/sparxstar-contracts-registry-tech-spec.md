@@ -1,10 +1,10 @@
 ---
-product_id: contracts-registry
+product_id: sparxstar-contracts-registry
 name: "SPARXSTAR Contracts Registry"
 status: review
 version: "1.0.0"
 owner: "@MaximillianGroup"
-last_reviewed: "2026-06-29"
+last_reviewed: "2026-06-30"
 spec_id_prefix: "CONTRACTS"
 ---
 
@@ -158,6 +158,13 @@ No HTTP endpoints, hooks, or events — distribution is via Composer + Git refs.
 
 **Planned:**
 
+- **Flat repo-name layout (adopted):** migrate storage from
+  `Contracts/{Group}/{Product}/` to `Contracts/{repo-name}/`, and specs to
+  `specs/{repo-name}/{repo-name}-tech-spec.md`, so each of the ~76 repos derives
+  its own path from its own name with no domain/group lookup. The spec side is
+  already wired (`governance.yml` uses `github.event.repository.name`); the
+  contract side requires each existing entry's producing repo name and a matching
+  change to that repo's sync target (see Open items).
 - Bind DVE Sky-Esu consumer repositories so dispatch can notify downstreams.
 - Pick up upstream namespace fixes (see Open items) once source repos rename.
 
@@ -175,8 +182,15 @@ Unresolved questions — do not assume answers.
 - **DVE Sky-Esu naming:** namespace product segment `Sky` vs slug `Sky-Esu`,
   plus an extra `\Contract` segment. Upstream ESU-repo decision; tracked in
   `MANIFEST.json` → `dve/sky-esu.open_items`.
-- **Spec domain:** this repo is infrastructure; the assumed propose-spec domain
-  is `infrastructure` — owner to confirm.
+- **Contract-layout migration — producing repo names:** the flat
+  `Contracts/{repo-name}/` scheme keys on each contract's producing repo name,
+  which `MANIFEST.json` does not currently record. Re-homing `Contracts/IAMC/Helios`,
+  `Contracts/DVE/Sky-Esu`, and the placeholder entries requires that mapping from
+  the architect; names must not be guessed.
+- **Contract-layout migration — cross-repo sync:** each producing repo's sync
+  target (`TARGET_FOLDER` in its `governance.yml`) must change to
+  `Contracts/{repo-name}/` in lockstep, or the next sync recreates the old nested
+  path. This coordination is outside this registry.
 - **Residual dev advisories:** `js-yaml` GHSA-h67p-54hq-rp68 and `markdown-it`
   GHSA-6v5v-wf23-fmfq have no upstream fix yet (dev/CI-only).
 
