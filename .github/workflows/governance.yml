@@ -19,17 +19,22 @@ permissions:
 
 jobs:
 
-  # ─── STEP 1: PULL SPEC ────────────────────────────────────
-  # Fetch this repo's canonical spec from the registry so CI sees the
-  # authoritative copy. The registry version wins on disagreement.
-  pull-spec:
-    uses: Starisian-Technologies/sparxstar-product-specification-registry/.github/workflows/fetch-specs.yml@v1.0.0
-    with:
-      specs: "sparxstar-contracts-registry"
-      agent-ref: main
-      contract-ref: "v1.0.0"
-    secrets:
-      COMPOSER_RESOLVER_PRIVATE_KEY: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
+  # ─── STEP 1: PULL SPEC (deferred) ─────────────────────────
+  # Intentionally omitted for now. It would call the spec registry's reusable
+  # workflow:
+  #   Starisian-Technologies/sparxstar-product-specification-registry/.github/workflows/fetch-specs.yml@<ref>
+  # That workflow/ref is not published yet, and referencing a non-existent
+  # reusable workflow is a startup failure that fails the whole run. Restore this
+  # job once fetch-specs.yml exists at a resolvable tag:
+  #
+  #   pull-spec:
+  #     uses: Starisian-Technologies/sparxstar-product-specification-registry/.github/workflows/fetch-specs.yml@v1.0.0
+  #     with:
+  #       specs: "sparxstar-contracts-registry"
+  #       agent-ref: main
+  #       contract-ref: "v1.0.0"
+  #     secrets:
+  #       COMPOSER_RESOLVER_PRIVATE_KEY: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
 
   # ─── STEP 2: (no repo-specific build) ─────────────────────
   # Contract structure/validation already runs in validate-contracts.yml and
