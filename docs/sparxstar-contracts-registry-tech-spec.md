@@ -103,8 +103,8 @@ Schema version: `1.0.0`.
 ## 6. API surface
 
 - **Composer package:** `starisian/sparxstar-contracts-registry`, PHP `>=8.2`,
-  PSR-4 roots declared in `composer.json` (currently `SparxStar\Helios\` →
-  `Contracts/IAMC/Helios/` and `Starisian\Sparxstar\Sky\Contract\` →
+  PSR-4 roots declared in `composer.json` (currently `SparxStar\\Helios\\` →
+  `Contracts/IAMC/Helios/` and `Starisian\\Sparxstar\\Sky\\Contract\\` →
   `Contracts/DVE/Sky-Esu/`).
 - **Reusable workflow:** `.github/workflows/contract-conformance.yml`
   (`workflow_call`) — inputs `contract-ref`, `contracts`, `consumer`,
