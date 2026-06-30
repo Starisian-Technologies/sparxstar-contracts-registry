@@ -41,8 +41,9 @@ jobs:
   # the existing CI workflows; not duplicated here.
 
   # ─── STEP 3: PROPOSE SPEC UPDATE ──────────────────────────
-  # On merge to main, if docs/contracts-registry-tech-spec.md changed, open a PR
-  # on the spec registry with the update. We propose; the registry owns.
+  # On merge to main, if docs/<repo-name>-tech-spec.md changed (glob
+  # docs/*-tech-spec.md), open a PR on the spec registry with the update.
+  # We propose; the registry owns.
   propose-spec:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -70,12 +71,13 @@ jobs:
 
       - name: Generate token
         if: steps.check.outputs.changed == 'true'
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         id: token
         with:
-          app-id: ${{ vars.CONTRACT_SYNC_CLIENT_ID }}
+          client-id: ${{ vars.CONTRACT_SYNC_CLIENT_ID }}
           private-key: ${{ secrets.CONTRACT_SYNC_PRIVATE_KEY }}
           owner: Starisian-Technologies
+          repositories: sparxstar-product-specification-registry
 
       - name: Propose to registry
         if: steps.check.outputs.changed == 'true'
