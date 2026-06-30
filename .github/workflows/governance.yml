@@ -40,9 +40,11 @@ jobs:
   # Contract structure/validation already runs in validate-contracts.yml and
   # the existing CI workflows; not duplicated here.
 
-  # ─── STEP 3: PROPOSE SPEC UPDATE ──────────────────────────
-  # On merge to main, if docs/<repo-name>-tech-spec.md changed (glob
-  # docs/*-tech-spec.md), open a PR on the spec registry with the update.
+  # ─── STEP 3: PROPOSE SPEC (create on first push, update on change) ──
+  # On every push to main, compare our docs/<repo-name>-tech-spec.md with the
+  # registry's copy. If the registry lacks it (first push) or it differs, open a
+  # proposal PR; if identical, do nothing. The comparison is against the registry
+  # itself, so creation does not depend on the file changing in this push.
   # We propose; the registry owns.
   propose-spec:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -50,27 +52,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
           path: source
 
-      - name: Check if spec changed
-        id: check
-        run: |
-          cd source
-          # Guard HEAD~1: it doesn't exist on an initial commit or a 1-commit shallow clone.
-          if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-            CHANGED=$(git diff HEAD~1 --name-only -- docs/*-tech-spec.md || echo "")
-          else
-            CHANGED=$(git ls-files -- docs/*-tech-spec.md)
-          fi
-          if [ -n "$CHANGED" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Generate token
-        if: steps.check.outputs.changed == 'true'
         uses: actions/create-github-app-token@v3
         id: token
         with:
@@ -80,42 +64,56 @@ jobs:
           repositories: sparxstar-product-specification-registry
 
       - name: Propose to registry
-        if: steps.check.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           # Flat repo-name scheme: every repo's spec lives at
           # specs/{repo-name}/{repo-name}-tech-spec.md — no domain lookup.
           SPEC_KEY: ${{ github.event.repository.name }}
         run: |
+          set -euo pipefail
           REGISTRY="Starisian-Technologies/sparxstar-product-specification-registry"
-          BRANCH="propose/${SPEC_KEY}-$(date +%Y%m%d-%H%M%S)"
           TARGET="specs/${SPEC_KEY}/${SPEC_KEY}-tech-spec.md"
+          SRC="source/docs/${SPEC_KEY}-tech-spec.md"
+
+          if [ ! -f "$SRC" ]; then
+            echo "No spec at $SRC — nothing to propose."
+            exit 0
+          fi
 
           # Authenticate git via gh's credential helper so the token never
           # appears in clone/push arguments or logs (CWE-532).
           gh auth setup-git
           git clone --depth 1 "https://github.com/${REGISTRY}.git" registry
 
-          cd registry
-          git checkout -b "$BRANCH"
-          mkdir -p "$(dirname "$TARGET")"
-          cp "../source/docs/${SPEC_KEY}-tech-spec.md" "$TARGET"
+          mkdir -p "registry/$(dirname "$TARGET")"
+          cp "$SRC" "registry/${TARGET}"
 
+          cd registry
           git config user.name "sparxstar-contract-sync[bot]"
           git config user.email "contract-sync@starisian.com"
           git add -A
+          # Idempotent: identical to the registry's copy -> nothing to do.
           if git diff --cached --quiet; then
-            echo "No spec changes to propose."
+            echo "Registry spec already up to date — nothing to propose."
             exit 0
           fi
+
+          # Deterministic branch per source commit, so re-runs don't duplicate.
+          BRANCH="propose/${SPEC_KEY}-${GITHUB_SHA:0:7}"
+          git checkout -b "$BRANCH"
           git commit -m "propose: ${SPEC_KEY} spec from ${GITHUB_REPOSITORY}@${GITHUB_SHA:0:7}"
-          if ! git push origin "$BRANCH"; then
+          if ! git push --set-upstream origin "$BRANCH"; then
             echo "::error::Failed to push $BRANCH to $REGISTRY"
             exit 1
           fi
-          gh pr create \
-            --repo "$REGISTRY" \
-            --base main \
-            --head "$BRANCH" \
-            --title "propose: ${SPEC_KEY} spec update" \
-            --body "Proposed by ${GITHUB_REPOSITORY}. Review before merging."
+          # Open a PR unless one already exists for this branch.
+          if [ -z "$(gh pr list --repo "$REGISTRY" --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            gh pr create \
+              --repo "$REGISTRY" \
+              --base main \
+              --head "$BRANCH" \
+              --title "propose: ${SPEC_KEY} spec update" \
+              --body "Proposed by ${GITHUB_REPOSITORY}@${GITHUB_SHA:0:7}. Review before merging."
+          else
+            echo "PR already open for $BRANCH."
+          fi
