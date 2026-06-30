@@ -15,8 +15,8 @@ name: Propose Contract Update
 #     propose-contract:
 #       uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/propose-contract.yml@v1.0.0
 #       with:
-#         product: iamc/helios
-#         contract-path: Contracts/IAMC/Helios/Contracts/SPXHeliosClientInterface.php
+#         product: sparxstar-helios-core
+#         contract-path: Contracts/sparxstar-helios-core/SPXHeliosClientInterface.php
 #         contract-content: ${{ steps.render-contract.outputs.content }}
 #         status: review
 #         source-repo: ${{ github.repository }}
@@ -51,7 +51,7 @@ on:
       contract-path:
         description: >
           Path in the registry where the contract file lives
-          (e.g. "Contracts/IAMC/Helios/Contracts/SPXHeliosClientInterface.php").
+          (e.g. "Contracts/{repo-name}/SPXHeliosClientInterface.php").
           Must sit under the product's MANIFEST path. If empty, resolved from MANIFEST.json.
         required: false
         type: string

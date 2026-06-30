@@ -26,7 +26,8 @@ the sync fixes whenever it drifts.
 
 **Owns:**
 
-- The published distribution copy of every contract under `Contracts/{Group}/{Product}/`.
+- The published distribution copy of every contract under `Contracts/{repo-name}/`
+  (one flat folder per source repo, created on first sync via `mkdir -p`).
 - `MANIFEST.json` — the authoritative index of contracts, their status, paths,
   namespaces, symbols, and consumer bindings.
 - The Composer package `starisian/sparxstar-contracts-registry` and its PSR-4
@@ -59,19 +60,20 @@ the sync fixes whenever it drifts.
 
 ```text
 Contracts/
-  {Group}/            # IAMC, DVE, IAtlas, Starmus
-    {Product}/        # Helios, Sirus, Sky-Esu, …
-      README.md
-      (interface / enum / value-object files)
+  {repo-name}/        # one flat folder per source repo (e.g. sparxstar-helios-core)
+    README.md
+    (interface / enum / value-object files)
 MANIFEST.json         # authoritative contract index
 composer.json         # PSR-4 autoload, no runtime deps
 bin/check-contracts.sh   # structure + naming gate
-.github/workflows/    # sync-in, validate, conformance, dispatch, publish
+.github/workflows/    # validate, conformance, dispatch, publish
 ```
 
-- **Sync-in:** producing repos push their `docs/contracts/*` directly to the
-  matching `Contracts/{Group}/{Product}/` folder on merge to their main. The
-  registry receives files as-is, unedited.
+- **Sync-in:** producing repos push their `docs/contracts/*` directly to
+  `Contracts/{repo-name}/` on merge to their main, where `{repo-name}` is the
+  source repo's own name. The folder is created on first push (`mkdir -p`), so
+  the registry needs no advance knowledge of repo names. The registry receives
+  files as-is, unedited.
 - **Index resolution:** `MANIFEST.json` is the single source workflows read to
   resolve paths, status, and consumer bindings.
 - **Distribution:** consumers `composer require starisian/sparxstar-contracts-registry`
@@ -91,7 +93,7 @@ No database. The data model is `MANIFEST.json`:
 | `binding_filter`            | string[] | Statuses fetchable by consumers (`canonical`, `ratified`). |
 | `contracts.{id}.domain`     | string   | Group (IAMC, DVE, …).                                      |
 | `contracts.{id}.slug`       | string   | Product slug.                                              |
-| `contracts.{id}.path`       | string   | `Contracts/{Group}/{Product}`.                             |
+| `contracts.{id}.path`       | string   | `Contracts/{repo-name}`.                                   |
 | `contracts.{id}.status`     | string   | Per `status_vocabulary`.                                   |
 | `contracts.{id}.namespaces` | string[] | Declared PHP namespaces.                                   |
 | `contracts.{id}.symbols`    | string[] | Fully-qualified interface/enum/VO names.                   |
@@ -156,17 +158,19 @@ No HTTP endpoints, hooks, or events — distribution is via Composer + Git refs.
 
 - This tech spec — first submission to the spec registry (status `review`).
 
+**On main (convention):**
+
+- **Flat repo-name layout.** Contracts live at `Contracts/{repo-name}/` and
+  specs at `specs/{repo-name}/{repo-name}-tech-spec.md` — each of the ~76 repos
+  derives its own path from its own name, with no domain/group lookup and no
+  advance registration. Folders are created on first push (`mkdir -p`), so the
+  registries never need to know repo names ahead of time.
+
 **Planned:**
 
-- **Flat repo-name layout (adopted):** migrate storage from
-  `Contracts/{Group}/{Product}/` to `Contracts/{repo-name}/`, and specs to
-  `specs/{repo-name}/{repo-name}-tech-spec.md`, so each of the ~76 repos derives
-  its own path from its own name with no domain/group lookup. The spec side is
-  already wired (`governance.yml` uses `github.event.repository.name`); the
-  contract side requires each existing entry's producing repo name and a matching
-  change to that repo's sync target (see Open items).
 - Bind DVE Sky-Esu consumer repositories so dispatch can notify downstreams.
 - Pick up upstream namespace fixes (see Open items) once source repos rename.
+- Retire legacy nested folders as each source repo re-syncs under the flat scheme.
 
 **Not started:**
 
@@ -182,12 +186,12 @@ Unresolved questions — do not assume answers.
 - **DVE Sky-Esu naming:** namespace product segment `Sky` vs slug `Sky-Esu`,
   plus an extra `\Contract` segment. Upstream ESU-repo decision; tracked in
   `MANIFEST.json` → `dve/sky-esu.open_items`.
-- **Contract-layout migration — producing repo names:** the flat
-  `Contracts/{repo-name}/` scheme keys on each contract's producing repo name,
-  which `MANIFEST.json` does not currently record. Re-homing `Contracts/IAMC/Helios`,
-  `Contracts/DVE/Sky-Esu`, and the placeholder entries requires that mapping from
-  the architect; names must not be guessed.
-- **Contract-layout migration — cross-repo sync:** each producing repo's sync
+- **Legacy nested folders:** `Contracts/IAMC/Helios`, `Contracts/DVE/Sky-Esu`,
+  and the placeholder entries predate the flat scheme. They are not migrated by
+  hand here; each is superseded when its source repo next syncs to
+  `Contracts/{repo-name}/`. `composer.json` autoload tracks the actual on-disk
+  path until then.
+- **Cross-repo sync (informational):** each producing repo's sync
   target (`TARGET_FOLDER` in its `governance.yml`) must change to
   `Contracts/{repo-name}/` in lockstep, or the next sync recreates the old nested
   path. This coordination is outside this registry.

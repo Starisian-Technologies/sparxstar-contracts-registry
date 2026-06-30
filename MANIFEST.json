@@ -2,6 +2,7 @@
   "schema_version": "1.0.0",
   "registry": "Starisian-Technologies/sparxstar-contracts-registry",
   "description": "Authoritative index of every contract distributed by this registry. fetch-contracts.yml, propose-contract.yml, dispatch-contract-change.yml and contract-conformance.yml all resolve paths, status and consumer bindings from this file. Edit this file (via PR) when a contract is added, promoted, or a consumer binding changes.",
+  "path_convention": "Contracts are stored flat, one folder per source repository: Contracts/{repo-name}/. Each repo derives its own path from its own name; no group/domain lookup, no advance registration. The folder is created on first sync (mkdir -p). New entries use a repo-name key and path; the legacy entries below still use the old group/product paths and migrate to Contracts/{repo-name}/ when their source repo next syncs.",
   "status_vocabulary": {
     "draft": "Authored, not yet reviewed. Never fetched by consumers.",
     "review": "Under registry-owner review. Proposable via propose-contract.yml; not fetchable.",

@@ -3,7 +3,7 @@
 ## Owns
 
 - The published distribution copy of every contract under
-  `Contracts/{Group}/{Product}/`.
+  `Contracts/{repo-name}/` (one flat folder per source repo, created on first sync).
 - `MANIFEST.json` — the authoritative index of contracts (status, paths,
   namespaces, symbols, consumer bindings).
 - The Composer package `starisian/sparxstar-contracts-registry` and its PSR-4

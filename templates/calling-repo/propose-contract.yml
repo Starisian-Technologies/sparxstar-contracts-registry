@@ -14,10 +14,10 @@ on:
   workflow_dispatch:
     inputs:
       product:
-        description: "MANIFEST contract key (e.g. iamc/helios)"
+        description: "MANIFEST contract key (the source repo name, e.g. sparxstar-helios-core)"
         required: true
       contract-path:
-        description: "Registry path to the file (e.g. Contracts/IAMC/Helios/Contracts/SPXHeliosClientInterface.php)"
+        description: "Registry path to the file (e.g. Contracts/{repo-name}/SPXHeliosClientInterface.php)"
         required: true
 
 permissions:

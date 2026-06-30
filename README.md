@@ -24,20 +24,29 @@ composer require starisian/sparxstar-contracts-registry
 
 ## Structure
 
+Contracts are stored flat, one folder per source repository, keyed by the
+repository's own name:
+
 ```text
 Contracts/
-  IAMC/
-    Helios/           # Identity, consent, retention (canonical)
-    Sirus/            # Context, trust, authority (review)
-    Ouroboros/        # Integrity, signing (review)
-  DVE/
-    Sky-Esu/          # ESU orchestration, jobs, translation (canonical)
-  IAtlas/             # Dictionary, NodeEngine, WordPad (review)
-  Starmus/            # Starmus contracts (review)
+  {repo-name}/        # e.g. Contracts/sparxstar-helios-core/
+    README.md
+    (interface / enum / value-object files)
 ```
+
+There is no group/domain lookup. Each repository derives its own path from its
+own name, so none of the registries need to know repo names in advance. The
+first sync from any repo creates `Contracts/{repo-name}/` automatically (the
+sync job runs `mkdir -p` before copying).
 
 Each folder is auto-synced from its source repo on merge to main. Do not edit
 files here directly — changes will be overwritten on the next sync.
+
+> **Migration note:** some folders predate this convention and are still nested
+> under the old group/product layout (e.g. `Contracts/IAMC/Helios/`,
+> `Contracts/DVE/Sky-Esu/`). Each will move to `Contracts/{repo-name}/` on its
+> source repo's next sync; `composer.json` autoload tracks the actual on-disk
+> path until then.
 
 ## Usage
 
