@@ -17,7 +17,7 @@ on:
         description: "MANIFEST contract key (the source repo name, e.g. sparxstar-helios-core)"
         required: true
       contract-path:
-        description: "Registry path to the file (e.g. Contracts/{repo-name}/SPXHeliosClientInterface.php)"
+        description: "Registry path to the file (e.g. Contracts/sparxstar-helios-core/SPXHeliosClientInterface.php)"
         required: true
 
 permissions:

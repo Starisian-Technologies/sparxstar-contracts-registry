@@ -187,14 +187,20 @@ Unresolved questions — do not assume answers.
   plus an extra `\Contract` segment. Upstream ESU-repo decision; tracked in
   `MANIFEST.json` → `dve/sky-esu.open_items`.
 - **Legacy nested folders:** `Contracts/IAMC/Helios`, `Contracts/DVE/Sky-Esu`,
-  and the placeholder entries predate the flat scheme. They are not migrated by
-  hand here; each is superseded when its source repo next syncs to
-  `Contracts/{repo-name}/`. `composer.json` autoload tracks the actual on-disk
-  path until then.
-- **Cross-repo sync (informational):** each producing repo's sync
-  target (`TARGET_FOLDER` in its `governance.yml`) must change to
-  `Contracts/{repo-name}/` in lockstep, or the next sync recreates the old nested
-  path. This coordination is outside this registry.
+  and the placeholder entries predate the flat scheme and have not been migrated
+  by hand here (no fabricated repo names).
+- **Migration is a single coordinated change (silent-failure risk):**
+  `composer.json` autoload and `MANIFEST.json` resolve consumers and workflows to
+  the legacy nested path. If a source repo flips its sync target to
+  `Contracts/{repo-name}/` **before** the registry metadata is updated, its files
+  land in a folder nothing resolves — updates are pushed but never distributed or
+  validated, a silent no-op. Flattening a contract must therefore be one atomic
+  change in this registry: (1) move the folder to `Contracts/{repo-name}/`,
+  (2) update the `composer.json` autoload path, (3) update the contract's
+  `MANIFEST.json` entry (key + `path`), (4) delete the old folder — performed in
+  lockstep with the source repo's sync-target change. No automated mechanism
+  updates registry metadata during a sync, so this coordination is required and
+  is owner-driven.
 - **Residual dev advisories:** `js-yaml` GHSA-h67p-54hq-rp68 and `markdown-it`
   GHSA-6v5v-wf23-fmfq have no upstream fix yet (dev/CI-only).
 
