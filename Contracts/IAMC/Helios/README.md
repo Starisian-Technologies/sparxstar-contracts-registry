@@ -6,12 +6,12 @@ Helios is the SPARXSTAR identity and access management contract domain. It defin
 
 ## At a Glance
 
-| Property          | Value                                 |
-| ----------------- | ------------------------------------- |
-| Status            | `canonical`                           |
-| Since             | 1.0.0                                 |
-| PSR-4 root        | `SparxStar\Helios\`                   |
-| Binding consumers | `Starisian-Technologies/helios-trust` |
+| Property          | Value                                           |
+| ----------------- | ------------------------------------------------ |
+| Status            | `canonical`                                       |
+| Since             | 1.0.0                                             |
+| PSR-4 root        | `SparxStar\Helios\`                               |
+| Binding consumers | `Starisian-Technologies/sparxstar-helios-trust`   |
 
 ## Contract Surface
 
@@ -21,7 +21,7 @@ Synced Helios files declare concrete sub-namespaces under the
 file you consume.
 
 | Contract                         | Kind         | Purpose                                                                             |
-| -------------------------------- | ------------ | ----------------------------------------------------------------------------------- |
+| --------------------------------- | ------------ | ------------------------------------------------------------------------------------ |
 | `SPXHeliosClientInterface`       | Interface    | Single shared contract for all Helios operations (identity, device, trust, session) |
 | `SPXSirusClientInterface`        | Interface    | Sirus authority contract consumed by Helios                                         |
 | `SPXHeliosIdentityDataInterface` | Interface    | Immutable cross-service identity projection                                         |
@@ -40,7 +40,7 @@ file you consume.
 
 ## Important Notes
 
-These files are synchronized from the `helios-trust` source repository. Do not edit them directly — changes are overwritten on the next sync. Propose changes via `propose-contract.yml` in the source repository.
+These files are synchronized from the `sparxstar-helios-trust` source repository. Do not edit them directly — changes are overwritten on the next sync. Propose changes via `propose-contract.yml` in the source repository.
 
 ## Related Contracts
 

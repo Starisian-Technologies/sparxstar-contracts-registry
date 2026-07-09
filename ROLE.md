@@ -15,7 +15,7 @@
 ## Does not own
 
 - Contract source code — owned by each producing product repo (e.g.
-  `helios-trust`, the ESU repo). Synced files here are read-only.
+  `sparxstar-helios-trust`, the ESU repo). Synced files here are read-only.
 - Tech specs — owned by `sparxstar-product-specification-registry`.
 - Architecture decisions / invariants — owned by
   `sparxstar-architecture-governance-registry` (ADR-017 governs the canonical
@@ -38,4 +38,4 @@
 - Any repo installing shared interfaces over Composer
   (`composer require starisian/sparxstar-contracts-registry`).
 - Repos calling the reusable `contract-conformance.yml` gate.
-- Currently bound: `Starisian-Technologies/helios-trust` (per `MANIFEST.json`).
+- Currently bound: `Starisian-Technologies/sparxstar-helios-trust` (per `MANIFEST.json`).
