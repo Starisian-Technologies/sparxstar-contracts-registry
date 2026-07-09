@@ -35,10 +35,10 @@
         "SparxStar\\Helios\\Agreement\\Enums\\SPXResourceSensitivity"
       ],
       "consumers": [
-        "Starisian-Technologies/helios-trust"
+        "Starisian-Technologies/sparxstar-helios-trust"
       ],
       "open_items": [
-        "Namespace deviation: synced files declare 'SparxStar\\Helios' but the canonical convention is 'Starisian\\Sparxstar\\Helios'. Fix is upstream in the Helios source repo (Starisian-Technologies/helios-trust) — rename the namespace there and let the sync propagate. Do not edit synced files here; manual edits are overwritten on the next sync, and composer.json autoload + these manifest namespaces/symbols must follow the source rename."
+        "Namespace deviation: synced files declare 'SparxStar\\Helios' but the canonical convention is 'Starisian\\Sparxstar\\Helios'. Fix is upstream in the Helios source repo (Starisian-Technologies/sparxstar-helios-trust) — rename the namespace there and let the sync propagate. Do not edit synced files here; manual edits are overwritten on the next sync, and composer.json autoload + these manifest namespaces/symbols must follow the source rename."
       ]
     },
     "dve/sky-esu": {
