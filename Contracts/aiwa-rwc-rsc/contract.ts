@@ -351,11 +351,37 @@ export interface CompletenessRequest {
   completeness_signal: CompletenessSignal
 }
 
-export type BatchEventType = 'token.save' | 'token.vote' | 'token.translate' | 'token.correct'
+export type BatchEventType = 'token.save' | 'token.vote' | 'token.translate' | 'token.correct' | 'game.result'
 export interface BatchEvent {
   event_id: string
   event_type: BatchEventType
   payload: Record<string, unknown>
+}
+
+/** game.result payload (GAME-SERVICE-INTAKE-SPEC-v1.0 §1; Reward Rail
+ *  Contract §3 GameResultEvent). No client-supplied xp/score — the engine
+ *  derives the award from game_type + outcome. */
+export interface GameResultPayload {
+  game_type: string
+  // Accepted on the wire (matches the Reward Rail Contract's envelope), but
+  // src/services/batch.ts's dispatch always substitutes the participant
+  // token's own session_id here before this reaches settleGameResult — the
+  // same pattern token.save/vote/translate/correct already use. A client-
+  // supplied value is currently never read or validated against; it isn't
+  // silently mismatched, it's just not consulted.
+  session_id: string
+  session_mode?: 'solo' | 'classroom'
+  deal_id?: string
+  // 'correct' | 'incorrect' | 'learning' are the base set (Reward Rail
+  // Contract §3); (string & {}) keeps the union open for a game_type's own
+  // extensions without losing autocomplete on the known values.
+  outcome: 'correct' | 'incorrect' | 'learning' | (string & {})
+  // Optional on the wire, not just in practice: batch.ts defaults a missing
+  // value to 0 rather than rejecting the event (intake spec §7, OQ-3 — no
+  // client populates these today). Marking them required here would claim a
+  // guarantee the runtime doesn't enforce.
+  attempts?: number
+  time_ms?: number
 }
 export interface BatchRequest {
   events: BatchEvent[]
