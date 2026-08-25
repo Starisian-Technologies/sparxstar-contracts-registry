@@ -37,7 +37,7 @@ are engine-scoped — see the file header for the per-section scoping rules.
 | ROLE | `ROLE.md` |
 | Base path | `/api/v1` |
 | Transports | REST (Express) + WebSocket (`socket.io`) + outbound HMAC webhooks |
-| Auth | Helios JWT (staff/admin/adult — scopes `rlc:teacher`, `rlc:school_admin`, `rlc:adult`) · HMAC participant tokens (students) · HMAC service auth (Yahura/Behistun/ESU/orchestrator) |
+| Auth | 3iAtlas Identity token (every account principal — authentication only; roles come from `rlc_authorizations`, NODE-ADR-007) · HMAC participant tokens (classroom students) · HMAC service auth (Yahura/Behistun/ESU/orchestrator) |
 | Timestamps | Unix epoch milliseconds (`BIGINT`), unless otherwise specified |
 
 ---
@@ -280,7 +280,7 @@ io(BACKEND_URL, { auth: { token: participantToken } } as StudentHandshakeAuth)
 
 // Teacher handshake
 io(BACKEND_URL, {
-  auth: { role: 'teacher', token: heliosJwt, sessionId } as TeacherHandshakeAuth
+  auth: { role: 'teacher', token: identityToken, sessionId } as TeacherHandshakeAuth
 })
 ```
 
