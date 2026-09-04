@@ -10,7 +10,7 @@ each must record attempts against them. They are independently installable and
 neither may depend on the other, so each keeps its own recorder, its own table,
 and its own delivery loop.
 
-That leaves the *rules* as the only thing that can be shared, and they are the
+That leaves the _rules_ as the only thing that can be shared, and they are the
 part that must not drift. A redaction bug in one plugin is a data-protection
 incident regardless of how correct the other one is. So the specification lives
 here once, and both implementations are held to it by the same vectors.
@@ -24,7 +24,7 @@ WordPress consumer exists.
 Events are emitted from `wp_ability_invoked`, which WordPress fires **before**
 the permission callback and **before** input validation.
 
-An event therefore records that a caller *asked*. It does not record that the
+An event therefore records that a caller _asked_. It does not record that the
 call was permitted, that its input was valid, or that anything executed. Reading
 these rows as an execution log will overstate what happened. This is also why
 the input is dangerous: at that point it is entirely attacker-controlled.
@@ -61,7 +61,7 @@ pass every vector unmodified — editing a vector so an implementation passes is
 itself the failure.
 
 The vectors are adversarial on purpose. They cover credentials under obvious key
-names and under innocuous ones, a credential used as a *key* rather than a
+names and under innocuous ones, a credential used as a _key_ rather than a
 value, PEM bodies, payloads nested past the depth bound, bare scalars, null, and
 key names in African orthographies, which must survive intact: they are
 diagnostic content, not credentials, and a summarizer that strips non-ASCII keys
@@ -69,10 +69,10 @@ destroys the audit's usefulness for the languages this platform exists to serve.
 
 ## Files
 
-| File | What it fixes |
-| --- | --- |
-| `SPXAbilityAuditEventInterface.php` | The event's shape and the meaning of each field |
-| `SPXAbilityValidationOutcome.php` | The three validation states and why `pending` persists |
-| `SPXAbilityAttemptSummarizerInterface.php` | The redaction boundary |
-| `ability-audit-event.schema.json` | Machine-readable event schema |
-| `redaction-vectors.json` | The adversarial conformance suite |
+| File                                       | What it fixes                                          |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `SPXAbilityAuditEventInterface.php`        | The event's shape and the meaning of each field        |
+| `SPXAbilityValidationOutcome.php`          | The three validation states and why `pending` persists |
+| `SPXAbilityAttemptSummarizerInterface.php` | The redaction boundary                                 |
+| `ability-audit-event.schema.json`          | Machine-readable event schema                          |
+| `redaction-vectors.json`                   | The adversarial conformance suite                      |
