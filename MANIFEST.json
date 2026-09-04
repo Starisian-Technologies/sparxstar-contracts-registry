@@ -9,7 +9,10 @@
     "ratified": "Reviewed and accepted. Fetchable by bound consumers. Changes require an amendment notice.",
     "canonical": "The single authoritative contract for its domain. Fetchable. Forking it in a consumer is a conformance failure."
   },
-  "binding_filter": ["canonical", "ratified"],
+  "binding_filter": [
+    "canonical",
+    "ratified"
+  ],
   "contracts": {
     "iamc/helios": {
       "domain": "IAMC",
@@ -127,6 +130,29 @@
       "namespaces": [],
       "symbols": [],
       "consumers": []
+    },
+    "dve/ability-audit": {
+      "domain": "DVE",
+      "slug": "AbilityAudit",
+      "path": "Contracts/DVE/AbilityAudit",
+      "status": "draft",
+      "since": "1.0.0",
+      "namespaces": [
+        "Starisian\\Sparxstar\\Sky\\Contract"
+      ],
+      "symbols": [
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXAbilityAuditEventInterface",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXAbilityValidationOutcome",
+        "Starisian\\Sparxstar\\Sky\\Contract\\SPXAbilityAttemptSummarizerInterface"
+      ],
+      "consumers": [
+        "Starisian-Technologies/sparxstar-sky-hermes",
+        "Starisian-Technologies/sparxstar-sky-dve-core"
+      ],
+      "open_items": [
+        "Path placement needs a ruling: path_convention says one folder per source repository, but this contract has no single source repo — it is authored here and binds two consumers. Placed under the DVE domain alongside dve/sky-esu; move it if the registry owner prefers otherwise.",
+        "Promotion from draft to canonical should wait until both consumers pass redaction-vectors.json in CI."
+      ]
     }
   }
 }

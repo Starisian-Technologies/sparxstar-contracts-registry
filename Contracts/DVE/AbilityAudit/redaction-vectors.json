@@ -1,0 +1,80 @@
+{
+  "vector_set_version": 1,
+  "applies_to": "Starisian\\Sparxstar\\Sky\\Contract\\SPXAbilityAttemptSummarizerInterface",
+  "conformance": "Every implementation MUST pass every vector unmodified. These are the conformance suite, not examples. A consumer that edits a vector to make its implementation pass has failed.",
+  "how_to_consume": "Decode this file, iterate `vectors`, pass each `input` to summarize(), then assert: the JSON encoding of the returned summary contains no string in `must_not_appear`; `type` equals `expect.type`; and every key in `expect.summary_keys` is present.",
+  "bounds": {
+    "max_depth": 3,
+    "max_keys": 20,
+    "note": "Depth and breadth MUST be bounded. An unbounded summarizer turns a hostile payload into the denial of service the audit path exists to survive."
+  },
+  "vectors": [
+    {
+      "id": "secrets-in-obviously-named-keys",
+      "description": "The base case. Values under key names that announce themselves as credentials.",
+      "input": {
+        "password": "hunter2-the-password",
+        "api_key": "sk-live-averyrealkey",
+        "authorization": "Bearer ghp_averyrealsecrettoken"
+      },
+      "must_not_appear": ["hunter2-the-password", "sk-live-averyrealkey", "ghp_averyrealsecrettoken"],
+      "expect": { "type": "array", "summary_keys": ["type", "bytes", "digest", "shape", "redaction"] }
+    },
+    {
+      "id": "secrets-under-innocuous-key-names",
+      "description": "A credential does not have to sit under a key named for one. Key-name heuristics alone are insufficient; no value may survive regardless of its key.",
+      "input": { "notes": "my password is hunter2-the-password", "bio": "reach me at jane.doe@example.com" },
+      "must_not_appear": ["hunter2-the-password", "jane.doe@example.com"],
+      "expect": { "type": "array", "summary_keys": ["type", "bytes", "digest", "shape", "redaction"] }
+    },
+    {
+      "id": "secret-used-as-a-key-name",
+      "description": "The adversarial inverse. Key names are retained because they carry the diagnostic value, so a caller who puts a credential or an email address in the KEY position defeats a summarizer that only redacts values. Realistic without malice: data keyed by email address, or a map keyed by token.",
+      "input": {
+        "ghp_averyrealsecrettoken": "v",
+        "jane.doe@example.com": { "role": "editor" }
+      },
+      "must_not_appear": ["ghp_averyrealsecrettoken", "jane.doe@example.com"],
+      "expect": { "type": "array", "summary_keys": ["type", "bytes", "digest", "shape", "redaction"] }
+    },
+    {
+      "id": "pem-private-key-body",
+      "description": "A multi-line credential pasted whole.",
+      "input": { "upload": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg\n-----END PRIVATE KEY-----" },
+      "must_not_appear": ["BEGIN PRIVATE KEY", "MIIEvQIBADANBg"],
+      "expect": { "type": "array", "summary_keys": ["type", "bytes", "digest", "shape", "redaction"] }
+    },
+    {
+      "id": "deeply-nested-secret",
+      "description": "A value buried below the depth bound must be dropped by the bound, not reached and then redacted.",
+      "input": { "a": { "b": { "c": { "d": { "e": "hunter2-the-password" } } } } },
+      "must_not_appear": ["hunter2-the-password"],
+      "expect": { "type": "array", "summary_keys": ["type", "bytes", "digest", "shape", "redaction"] }
+    },
+    {
+      "id": "bare-scalar-credential",
+      "description": "Input need not be an object at all. A bare string may be the whole credential.",
+      "input": "ghp_averyrealsecrettoken",
+      "must_not_appear": ["ghp_averyrealsecrettoken"],
+      "expect": { "type": "string", "summary_keys": ["type", "bytes", "digest", "shape", "redaction"] }
+    },
+    {
+      "id": "null-input",
+      "description": "Absence is a legal input and must summarize without error.",
+      "input": null,
+      "must_not_appear": [],
+      "expect": { "type": "NULL", "summary_keys": ["type", "bytes", "digest", "shape", "redaction"] }
+    },
+    {
+      "id": "non-latin-orthography-in-keys",
+      "description": "Key names in African orthographies must survive intact — they are the diagnostic content and are not credentials. A summarizer that strips non-ASCII keys destroys the audit's usefulness for the languages this platform exists to serve. NFC is canonical; the summarizer must not normalise to NFKC or NFKD, which would collapse orthographic distinctions.",
+      "input": { "Ɓàŋtaba": "value", "ŋàanéemà": "value", "kañeleŋ": "value" },
+      "must_not_appear": ["value"],
+      "expect": {
+        "type": "array",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"],
+        "shape_keys_present": ["Ɓàŋtaba", "ŋàanéemà", "kañeleŋ"]
+      }
+    }
+  ]
+}
