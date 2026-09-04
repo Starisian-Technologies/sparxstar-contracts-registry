@@ -1,0 +1,199 @@
+{
+  "vector_set_version": 1,
+  "applies_to": "Starisian\\Sparxstar\\Sky\\Contract\\SPXAbilityAttemptSummarizerInterface",
+  "conformance": "Every implementation MUST pass every vector unmodified. These are the conformance suite, not examples. A consumer that edits a vector to make its implementation pass has failed.",
+  "how_to_consume": "Decode this file, iterate `vectors`, pass each `input` to summarize(), then assert: the JSON encoding of the returned summary contains no string in `must_not_appear`; `type` equals `expect.type`; every key in `expect.summary_keys` is present; every key in `expect.shape_keys_present` survives in `shape`; and, where `expect.max_shape_entries` is given, `shape` holds no more entries than that.",
+  "bounds": {
+    "max_depth": 3,
+    "max_keys": 40,
+    "note": "Depth and breadth MUST be bounded. An unbounded summarizer turns a hostile payload into the denial of service the audit path exists to survive. max_keys was stated as 20 in the first draft while both implementations used 40; corrected to match the code, which is the authority when a spec and an implementation disagree. The breadth bound now has a vector, which it did not before — a stated bound that nothing exercises is a claim, not a contract."
+  },
+  "vectors": [
+    {
+      "id": "secrets-in-obviously-named-keys",
+      "description": "The base case. Values under key names that announce themselves as credentials.",
+      "input": {
+        "password": "hunter2-the-password",
+        "api_key": "sk-live-averyrealkey",
+        "authorization": "Bearer ghp_averyrealsecrettoken"
+      },
+      "must_not_appear": [
+        "hunter2-the-password",
+        "sk-live-averyrealkey",
+        "ghp_averyrealsecrettoken"
+      ],
+      "expect": {
+        "type": "array",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+      }
+    },
+    {
+      "id": "secrets-under-innocuous-key-names",
+      "description": "A credential does not have to sit under a key named for one. Key-name heuristics alone are insufficient; no value may survive regardless of its key.",
+      "input": {
+        "notes": "my password is hunter2-the-password",
+        "bio": "reach me at jane.doe@example.com"
+      },
+      "must_not_appear": ["hunter2-the-password", "jane.doe@example.com"],
+      "expect": {
+        "type": "array",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+      }
+    },
+    {
+      "id": "secret-used-as-a-key-name",
+      "description": "The adversarial inverse. Key names are retained because they carry the diagnostic value, so a caller who puts a credential or an email address in the KEY position defeats a summarizer that only redacts values. Realistic without malice: data keyed by email address, or a map keyed by token.",
+      "input": {
+        "ghp_averyrealsecrettoken": "v",
+        "jane.doe@example.com": {
+          "role": "editor"
+        }
+      },
+      "must_not_appear": ["ghp_averyrealsecrettoken", "jane.doe@example.com"],
+      "expect": {
+        "type": "array",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+      }
+    },
+    {
+      "id": "pem-private-key-body",
+      "description": "A multi-line credential pasted whole.",
+      "input": {
+        "upload": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg\n-----END PRIVATE KEY-----"
+      },
+      "must_not_appear": ["BEGIN PRIVATE KEY", "MIIEvQIBADANBg"],
+      "expect": {
+        "type": "array",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+      }
+    },
+    {
+      "id": "deeply-nested-secret",
+      "description": "A value buried below the depth bound must be dropped by the bound, not reached and then redacted.",
+      "input": {
+        "a": {
+          "b": {
+            "c": {
+              "d": {
+                "e": "hunter2-the-password"
+              }
+            }
+          }
+        }
+      },
+      "must_not_appear": ["hunter2-the-password"],
+      "expect": {
+        "type": "array",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+      }
+    },
+    {
+      "id": "bare-scalar-credential",
+      "description": "Input need not be an object at all. A bare string may be the whole credential.",
+      "input": "ghp_averyrealsecrettoken",
+      "must_not_appear": ["ghp_averyrealsecrettoken"],
+      "expect": {
+        "type": "string",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+      }
+    },
+    {
+      "id": "null-input",
+      "description": "Absence is a legal input and must summarize without error.",
+      "input": null,
+      "must_not_appear": [],
+      "expect": {
+        "type": "NULL",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+      }
+    },
+    {
+      "id": "non-latin-orthography-in-keys",
+      "description": "Key names in African orthographies must survive intact — they are the diagnostic content and are not credentials. A summarizer that strips non-ASCII keys destroys the audit's usefulness for the languages this platform exists to serve. NFC is canonical; the summarizer must not normalise to NFKC or NFKD, which would collapse orthographic distinctions.",
+      "input": {
+        "Ɓàŋtaba": "kañeleŋ-secret-payload",
+        "ŋàanéemà": "kañeleŋ-secret-payload",
+        "kañeleŋ": "kañeleŋ-secret-payload"
+      },
+      "must_not_appear": ["kañeleŋ-secret-payload"],
+      "expect": {
+        "type": "array",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"],
+        "shape_keys_present": ["Ɓàŋtaba", "ŋàanéemà", "kañeleŋ"]
+      },
+      "note": "The forbidden string is deliberately distinctive. An earlier draft used the value \"value\", which collides with the substring \"values never recorded\" in the summary's own redaction notice and failed a conforming implementation. A vector's forbidden strings must not appear incidentally in a correct summary."
+    },
+    {
+      "id": "breadth-bound-is-enforced",
+      "description": "A payload far wider than the breadth bound. The summarizer must truncate rather than walk every key: an attacker who can widen the input arbitrarily would otherwise choose how much work the audit path does on their behalf. 60 keys against a bound of 40, so the shape may hold at most the bound plus one truncation marker.",
+      "input": {
+        "field_00": "kañeleŋ-secret-payload",
+        "field_01": "kañeleŋ-secret-payload",
+        "field_02": "kañeleŋ-secret-payload",
+        "field_03": "kañeleŋ-secret-payload",
+        "field_04": "kañeleŋ-secret-payload",
+        "field_05": "kañeleŋ-secret-payload",
+        "field_06": "kañeleŋ-secret-payload",
+        "field_07": "kañeleŋ-secret-payload",
+        "field_08": "kañeleŋ-secret-payload",
+        "field_09": "kañeleŋ-secret-payload",
+        "field_10": "kañeleŋ-secret-payload",
+        "field_11": "kañeleŋ-secret-payload",
+        "field_12": "kañeleŋ-secret-payload",
+        "field_13": "kañeleŋ-secret-payload",
+        "field_14": "kañeleŋ-secret-payload",
+        "field_15": "kañeleŋ-secret-payload",
+        "field_16": "kañeleŋ-secret-payload",
+        "field_17": "kañeleŋ-secret-payload",
+        "field_18": "kañeleŋ-secret-payload",
+        "field_19": "kañeleŋ-secret-payload",
+        "field_20": "kañeleŋ-secret-payload",
+        "field_21": "kañeleŋ-secret-payload",
+        "field_22": "kañeleŋ-secret-payload",
+        "field_23": "kañeleŋ-secret-payload",
+        "field_24": "kañeleŋ-secret-payload",
+        "field_25": "kañeleŋ-secret-payload",
+        "field_26": "kañeleŋ-secret-payload",
+        "field_27": "kañeleŋ-secret-payload",
+        "field_28": "kañeleŋ-secret-payload",
+        "field_29": "kañeleŋ-secret-payload",
+        "field_30": "kañeleŋ-secret-payload",
+        "field_31": "kañeleŋ-secret-payload",
+        "field_32": "kañeleŋ-secret-payload",
+        "field_33": "kañeleŋ-secret-payload",
+        "field_34": "kañeleŋ-secret-payload",
+        "field_35": "kañeleŋ-secret-payload",
+        "field_36": "kañeleŋ-secret-payload",
+        "field_37": "kañeleŋ-secret-payload",
+        "field_38": "kañeleŋ-secret-payload",
+        "field_39": "kañeleŋ-secret-payload",
+        "field_40": "kañeleŋ-secret-payload",
+        "field_41": "kañeleŋ-secret-payload",
+        "field_42": "kañeleŋ-secret-payload",
+        "field_43": "kañeleŋ-secret-payload",
+        "field_44": "kañeleŋ-secret-payload",
+        "field_45": "kañeleŋ-secret-payload",
+        "field_46": "kañeleŋ-secret-payload",
+        "field_47": "kañeleŋ-secret-payload",
+        "field_48": "kañeleŋ-secret-payload",
+        "field_49": "kañeleŋ-secret-payload",
+        "field_50": "kañeleŋ-secret-payload",
+        "field_51": "kañeleŋ-secret-payload",
+        "field_52": "kañeleŋ-secret-payload",
+        "field_53": "kañeleŋ-secret-payload",
+        "field_54": "kañeleŋ-secret-payload",
+        "field_55": "kañeleŋ-secret-payload",
+        "field_56": "kañeleŋ-secret-payload",
+        "field_57": "kañeleŋ-secret-payload",
+        "field_58": "kañeleŋ-secret-payload",
+        "field_59": "kañeleŋ-secret-payload"
+      },
+      "must_not_appear": ["kañeleŋ-secret-payload"],
+      "expect": {
+        "type": "array",
+        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"],
+        "max_shape_entries": 41
+      }
+    }
+  ]
+}
