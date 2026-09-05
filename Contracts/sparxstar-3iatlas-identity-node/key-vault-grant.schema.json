@@ -4,7 +4,7 @@
   "title": "Key Vault grant token claims",
   "description": "Claims of an Identity-issued key-vault grant. Verbatim from AUTH-KEY-LIFECYCLE-INSTRUCTIONS-v2 Appendix B.3; this file is now the authoritative home and that appendix is a reference to it. Enforcement semantics are INV-017.",
   "type": "object",
-  "required": ["iss", "aud", "sub", "jti", "iat", "exp", "op"],
+  "required": ["iss", "aud", "sub", "jti", "iat", "nbf", "exp", "op"],
   "additionalProperties": false,
   "properties": {
     "iss": { "type": "string", "description": "Identity Node issuer." },
@@ -15,7 +15,7 @@
     "sub": { "type": "string", "description": "accountRef. Must equal {accountRef} in the request path — fail closed on mismatch." },
     "jti": { "type": "string", "minLength": 1, "description": "Single-use for destructive operations; the Key Vault persists consumed values until exp." },
     "iat": { "type": "integer", "description": "Seconds since epoch (RFC 7519 NumericDate)." },
-    "nbf": { "type": "integer", "description": "Seconds since epoch." },
+    "nbf": { "type": "integer", "description": "Seconds since epoch. REQUIRED per INV-017 (valid iat/nbf/exp). Appendix B.3's claim list omits nbf; the owner ruling of 2026-09-05 is newer and governs. See the README." },
     "exp": { "type": "integer", "description": "Seconds since epoch. Destructive operations: exp - iat <= 300." },
     "op": {
       "enum": [

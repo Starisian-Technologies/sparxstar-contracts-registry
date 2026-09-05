@@ -58,11 +58,11 @@
         "nbf": 1767225600,
         "exp": 1767225900,
         "op": "manifest-rotate",
-        "expectedVersion": 4,
+        "expectedVersion": 5,
         "txId": "tx-1"
       },
       "expect": "accept",
-      "reason": "manifest-rotate carries expectedVersion and txId; exp-iat is exactly 300.",
+      "reason": "manifest-rotate carries expectedVersion and txId; exp-iat is exactly 300. expectedVersion matches stored_state.manifestVersion, so the verifier's version precondition passes.",
       "sides": [
         "issuer",
         "verifier"
@@ -109,11 +109,11 @@
         "nbf": 1767225600,
         "exp": 1767225900,
         "op": "manifest-provisioning-replace",
-        "expectedVersion": 1,
+        "expectedVersion": 5,
         "generation": 1
       },
       "expect": "accept",
-      "reason": "expectedVersion plus same-generation.",
+      "reason": "expectedVersion matches stored_state.manifestVersion, plus the same-generation binding (generation 1 is present in stored_state.generations).",
       "sides": [
         "issuer",
         "verifier"
@@ -303,10 +303,10 @@
         "iat": 1767225600,
         "nbf": 1767225600,
         "exp": 1767225900,
-        "op": "manifest-read"
+        "op": "manifest-create"
       },
       "expect": "reject",
-      "reason": "The provisioning token is EXCHANGED for a manifest-create grant; it is never dual-purpose.",
+      "reason": "The provisioning token is EXCHANGED for a manifest-create grant; it is never dual-purpose. op matches the route deliberately, so the ONLY defect is the audience \u2014 a case that also mismatched the operation would pass for the wrong reason.",
       "sides": [
         "verifier"
       ]
@@ -448,6 +448,29 @@
       "expect": "reject",
       "reason": "Not yet valid.",
       "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-nbf-missing",
+      "description": "Grant with no nbf claim.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-nonbf",
+        "iat": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "INV-017 requires valid iat, nbf AND exp. A grant with no not-before bound is refused rather than treated as valid-from-issue. See the contract README note on the divergence from Appendix B.3, whose claim list omits nbf.",
+      "sides": [
+        "issuer",
         "verifier"
       ]
     },
