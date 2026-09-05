@@ -1,5 +1,5 @@
 {
-  "vector_set_version": 1,
+  "vector_set_version": 2,
   "applies_to": "Starisian\\Sparxstar\\Sky\\Contract\\SPXAbilityAttemptSummarizerInterface",
   "conformance": "Every implementation MUST pass every vector unmodified. These are the conformance suite, not examples. A consumer that edits a vector to make its implementation pass has failed.",
   "how_to_consume": "Decode this file, iterate `vectors`, pass each `input` to summarize(), then assert: the JSON encoding of the returned summary contains no string in `must_not_appear`; `type` equals `expect.type`; every key in `expect.summary_keys` is present; every key in `expect.shape_keys_present` survives in `shape`; and, where `expect.max_shape_entries` is given, `shape` holds no more entries than that.",
@@ -24,7 +24,13 @@
       ],
       "expect": {
         "type": "array",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ]
       }
     },
     {
@@ -34,10 +40,19 @@
         "notes": "my password is hunter2-the-password",
         "bio": "reach me at jane.doe@example.com"
       },
-      "must_not_appear": ["hunter2-the-password", "jane.doe@example.com"],
+      "must_not_appear": [
+        "hunter2-the-password",
+        "jane.doe@example.com"
+      ],
       "expect": {
         "type": "array",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ]
       }
     },
     {
@@ -49,10 +64,43 @@
           "role": "editor"
         }
       },
-      "must_not_appear": ["ghp_averyrealsecrettoken", "jane.doe@example.com"],
+      "must_not_appear": [
+        "ghp_averyrealsecrettoken",
+        "jane.doe@example.com"
+      ],
       "expect": {
         "type": "array",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ]
+      }
+    },
+    {
+      "id": "secret-key-name-without-a-recognizable-prefix",
+      "description": "Extends secret-used-as-a-key-name. That vector only exercised keys a summarizer can spot structurally — a `ghp_` prefix, an email. A secret in key position need not look like either: it may be an ordinary-looking string that happens to be the credential, and the sensitive word inside it is what makes it tempting to keep. A summarizer that redacts the VALUE under a sensitive-looking key but echoes the KEY verbatim as its shape label persists the secret in the audit record it exists to keep clean. Labels for sensitive keys must be drawn from a fixed vocabulary, never from the input.",
+      "input": {
+        "hunter2-the-password": "x",
+        "my_secret_api_key_value_here": "x",
+        "session-9f2b1c-do-not-log": "x"
+      },
+      "must_not_appear": [
+        "hunter2-the-password",
+        "my_secret_api_key_value_here",
+        "session-9f2b1c-do-not-log"
+      ],
+      "expect": {
+        "type": "array",
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ]
       }
     },
     {
@@ -61,10 +109,19 @@
       "input": {
         "upload": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg\n-----END PRIVATE KEY-----"
       },
-      "must_not_appear": ["BEGIN PRIVATE KEY", "MIIEvQIBADANBg"],
+      "must_not_appear": [
+        "BEGIN PRIVATE KEY",
+        "MIIEvQIBADANBg"
+      ],
       "expect": {
         "type": "array",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ]
       }
     },
     {
@@ -81,20 +138,36 @@
           }
         }
       },
-      "must_not_appear": ["hunter2-the-password"],
+      "must_not_appear": [
+        "hunter2-the-password"
+      ],
       "expect": {
         "type": "array",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ]
       }
     },
     {
       "id": "bare-scalar-credential",
       "description": "Input need not be an object at all. A bare string may be the whole credential.",
       "input": "ghp_averyrealsecrettoken",
-      "must_not_appear": ["ghp_averyrealsecrettoken"],
+      "must_not_appear": [
+        "ghp_averyrealsecrettoken"
+      ],
       "expect": {
         "type": "string",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ]
       }
     },
     {
@@ -104,7 +177,13 @@
       "must_not_appear": [],
       "expect": {
         "type": "NULL",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"]
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ]
       }
     },
     {
@@ -115,11 +194,23 @@
         "ŋàanéemà": "kañeleŋ-secret-payload",
         "kañeleŋ": "kañeleŋ-secret-payload"
       },
-      "must_not_appear": ["kañeleŋ-secret-payload"],
+      "must_not_appear": [
+        "kañeleŋ-secret-payload"
+      ],
       "expect": {
         "type": "array",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"],
-        "shape_keys_present": ["Ɓàŋtaba", "ŋàanéemà", "kañeleŋ"]
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ],
+        "shape_keys_present": [
+          "Ɓàŋtaba",
+          "ŋàanéemà",
+          "kañeleŋ"
+        ]
       },
       "note": "The forbidden string is deliberately distinctive. An earlier draft used the value \"value\", which collides with the substring \"values never recorded\" in the summary's own redaction notice and failed a conforming implementation. A vector's forbidden strings must not appear incidentally in a correct summary."
     },
@@ -188,10 +279,18 @@
         "field_58": "kañeleŋ-secret-payload",
         "field_59": "kañeleŋ-secret-payload"
       },
-      "must_not_appear": ["kañeleŋ-secret-payload"],
+      "must_not_appear": [
+        "kañeleŋ-secret-payload"
+      ],
       "expect": {
         "type": "array",
-        "summary_keys": ["type", "bytes", "digest", "shape", "redaction"],
+        "summary_keys": [
+          "type",
+          "bytes",
+          "digest",
+          "shape",
+          "redaction"
+        ],
         "max_shape_entries": 41
       }
     }
