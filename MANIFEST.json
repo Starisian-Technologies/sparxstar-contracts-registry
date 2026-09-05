@@ -153,6 +153,23 @@
         "Path placement needs a ruling: path_convention says one folder per source repository, but this contract has no single source repo — it is authored here and binds two consumers. Placed under the DVE domain alongside dve/sky-esu; move it if the registry owner prefers otherwise.",
         "Promotion from draft to canonical should wait until both consumers pass redaction-vectors.json in CI."
       ]
+    },
+    "sparxstar-3iatlas-identity-node/key-vault-grant": {
+      "domain": "3iAtlas",
+      "slug": "KeyVaultGrant",
+      "path": "Contracts/sparxstar-3iatlas-identity-node",
+      "status": "draft",
+      "since": "1.0.0",
+      "description": "The Identity <-> Key Vault grant contract: verified claims, the eight-operation list, five-minute destructive grants, single-use jti, version and transaction binding, Vault receipts, and interrupted-transaction reconciliation. Enforcement is INV-017; shared conformance vectors are in conformance/vectors.json.",
+      "namespaces": [],
+      "symbols": [],
+      "consumers": [
+        "Starisian-Technologies/sparxstar-3iatlas-identity-node"
+      ],
+      "open_items": [
+        "The Key Vault repository is not yet bound as a consumer. It was not attached to the session that authored this contract, so its repository name was not verified and is deliberately not guessed. The contract is unenforceable on the verifier side until it is bound.",
+        "docs/AUTH-KEY-LIFECYCLE-INSTRUCTIONS-v2.md exists as a hand-kept copy in BOTH sparxstar-3iatlas-identity-node and sparxstar-3iatlas-wordpad, and the two have already drifted (256 differing lines, measured 2026-09-05). Appendix B.3 is currently identical in both, by luck rather than structure. Both copies retire to references pointing here."
+      ]
     }
   }
 }
