@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.sparxstar.dev/sparxstar-3iatlas-identity-node/key-vault-receipt.schema.json",
+  "title": "Key Vault receipt claims",
+  "description": "Signed by the Key Vault's own keypair, consumed by Identity. Verbatim from AUTH-KEY-LIFECYCLE-INSTRUCTIONS-v2 Appendix B.4. A receipt authorizes nothing except the one Identity endpoint that consumes it; it is not a bearer credential anywhere else.",
+  "type": "object",
+  "required": ["iss", "aud", "sub", "jti", "iat", "exp", "op", "manifestRef", "manifestVersion", "generation", "credentialVersion"],
+  "additionalProperties": false,
+  "properties": {
+    "iss": { "const": "key-vault" },
+    "aud": { "const": "identity-node", "description": "Scalar only." },
+    "sub": { "type": "string", "description": "accountRef." },
+    "jti": { "type": "string", "minLength": 1, "description": "Single-use. Identity persists consumed values until exp." },
+    "iat": { "type": "integer" },
+    "exp": { "type": "integer", "description": "exp - iat <= 1800 (30 minutes)." },
+    "op": {
+      "enum": ["manifest-create", "manifest-provisioning-replace", "manifest-rotate-pending"],
+      "description": "A rotation receipt attests a PENDING state, never a promotion. Promotion happens only via Identity's server-authenticated confirm."
+    },
+    "manifestRef": { "type": "string", "description": "Opaque, Vault-minted. The value Identity writes to encryption_key_ref." },
+    "manifestVersion": { "type": "integer" },
+    "generation": { "type": "integer" },
+    "credentialVersion": { "type": "integer" },
+    "txId": { "type": "string", "description": "Present for rotation receipts." }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "op": { "const": "manifest-rotate-pending" } }, "required": ["op"] },
+      "then": { "required": ["txId"] }
+    }
+  ]
+}

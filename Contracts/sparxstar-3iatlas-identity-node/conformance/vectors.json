@@ -1,0 +1,705 @@
+{
+  "contract": "sparxstar-3iatlas-identity-node/key-vault-grant",
+  "version": "1.0.0",
+  "description": "Shared conformance vectors for the Identity <-> Key Vault grant contract. ONE suite, run by BOTH sides: Identity against grant issuance, the Key Vault against grant verification. Two suites that agree today are the arrangement this replaces.",
+  "reference_time": 1767225600,
+  "reference_time_note": "All iat/nbf/exp are absolute seconds against this fixed instant. A runner evaluates cases as if now == reference_time, so vectors never expire and never flake.",
+  "sides": {
+    "issuer": "Identity Node \u2014 must REFUSE TO MINT a rejected case.",
+    "verifier": "Key Vault \u2014 must REFUSE TO ACCEPT a rejected case, leaving stored key material unchanged."
+  },
+  "stored_state": {
+    "accountRef": "acct-1",
+    "manifestVersion": 5,
+    "generations": [
+      1,
+      2
+    ]
+  },
+  "universal_assertion": "On every reject, stored key material is unchanged. No partial mutation, no best-effort completion: a refused request is indistinguishable from one that never arrived.",
+  "cases": [
+    {
+      "id": "accept-read",
+      "description": "Minimal valid read grant.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "accept",
+      "reason": "All required claims present; aud scalar; op matches route.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "accept-rotate",
+      "description": "Rotate grant with both conditional claims.",
+      "route": {
+        "op": "manifest-rotate",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-rot",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-rotate",
+        "expectedVersion": 5,
+        "txId": "tx-1"
+      },
+      "expect": "accept",
+      "reason": "manifest-rotate carries expectedVersion and txId; exp-iat is exactly 300. expectedVersion matches stored_state.manifestVersion, so the verifier's version precondition passes.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "accept-recover",
+      "description": "Generation recovery names the exact generation.",
+      "route": {
+        "op": "manifest-generation-recover",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-rec",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-generation-recover",
+        "generation": 2
+      },
+      "expect": "accept",
+      "reason": "generation present and exact.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "accept-prov-replace",
+      "description": "Provisioning replace, same generation.",
+      "route": {
+        "op": "manifest-provisioning-replace",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-pr",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-provisioning-replace",
+        "expectedVersion": 5,
+        "generation": 1
+      },
+      "expect": "accept",
+      "reason": "expectedVersion matches stored_state.manifestVersion, plus the same-generation binding (generation 1 is present in stored_state.generations).",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "accept-read-longer-exp",
+      "description": "Read grants may exceed 5 minutes; only destructive ops are capped.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767226500,
+        "op": "manifest-read"
+      },
+      "expect": "accept",
+      "reason": "The 300s ceiling binds destructive operations. Read grants are multi-use within a short expiry.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-aud-array",
+      "description": "aud as an array containing key-vault.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": [
+          "key-vault",
+          "atlas-api"
+        ],
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "aud must be a scalar. A membership check satisfied by an array is exactly the permissive validation INV-015 forbids.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-aud-array-single",
+      "description": "aud as a single-element array.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": [
+          "key-vault"
+        ],
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "Still an array. Scalar means scalar.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-aud-missing",
+      "description": "No aud claim.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "Missing aud is refused, never defaulted.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-aud-session",
+      "description": "A human session token presented to the Vault.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "atlas-api",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "Session tokens are never substitutes (INV-017).",
+      "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-aud-offline",
+      "description": "An offline lease presented to the Vault.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "wordpad-offline",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "Offline authorizations authorize local unlock only.",
+      "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-aud-machine",
+      "description": "A machine/service token presented to the Vault.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "dictionary",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "Machine tokens address the one service named in their audience.",
+      "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-aud-provisioning",
+      "description": "A provisioning token presented directly.",
+      "route": {
+        "op": "manifest-create",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "provisioning",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-create"
+      },
+      "expect": "reject",
+      "reason": "The provisioning token is EXCHANGED for a manifest-create grant; it is never dual-purpose. op matches the route deliberately, so the ONLY defect is the audience \u2014 a case that also mismatched the operation would pass for the wrong reason.",
+      "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-subject-mismatch",
+      "description": "sub does not match {accountRef} in the path.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-2",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "Exact subject-to-path match, fail closed.",
+      "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-op-route-mismatch",
+      "description": "Grant op does not match the route.",
+      "route": {
+        "op": "manifest-rotate",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "The grant's op must match the route exactly. A read grant never authorizes a rotation.",
+      "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-op-unknown",
+      "description": "Operation outside the enumerated set.",
+      "route": {
+        "op": "manifest-delete",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-delete"
+      },
+      "expect": "reject",
+      "reason": "op is a closed enumeration of eight operations.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-op-missing",
+      "description": "No op claim.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900
+      },
+      "expect": "reject",
+      "reason": "A grant with no operation is not a narrow grant; it is a capability.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-expired",
+      "description": "exp in the past.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225000,
+        "nbf": 1767225000,
+        "exp": 1767225599,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "Expired.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-nbf-future",
+      "description": "nbf in the future.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-1",
+        "iat": 1767225600,
+        "nbf": 1767225660,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "Not yet valid.",
+      "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-nbf-missing",
+      "description": "Grant with no nbf claim.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-nonbf",
+        "iat": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "reject",
+      "reason": "INV-017 requires valid iat, nbf AND exp. A grant with no not-before bound is refused rather than treated as valid-from-issue. See the contract README note on the divergence from Appendix B.3, whose claim list omits nbf.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-destructive-ttl-over-5m",
+      "description": "Destructive grant with a 6-minute life.",
+      "route": {
+        "op": "manifest-rotate",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-ttl",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225960,
+        "op": "manifest-rotate",
+        "expectedVersion": 4,
+        "txId": "tx-2"
+      },
+      "expect": "reject",
+      "reason": "exp - iat must be <= 300 for destructive operations. Identity must refuse to MINT this, and the Vault must refuse to accept it.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-destructive-ttl-boundary-over",
+      "description": "Destructive grant one second over the ceiling.",
+      "route": {
+        "op": "device-wrap-remove",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-301",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225901,
+        "op": "device-wrap-remove"
+      },
+      "expect": "reject",
+      "reason": "301 > 300. The boundary is inclusive at 300 and nothing beyond.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "accept-destructive-ttl-boundary",
+      "description": "Destructive grant exactly at the ceiling.",
+      "route": {
+        "op": "device-wrap-remove",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-300",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "device-wrap-remove"
+      },
+      "expect": "accept",
+      "reason": "exp - iat == 300 is permitted.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-rotate-no-txid",
+      "description": "manifest-rotate without txId.",
+      "route": {
+        "op": "manifest-rotate",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-nt",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-rotate",
+        "expectedVersion": 4
+      },
+      "expect": "reject",
+      "reason": "txId is required for manifest-rotate; without it the Vault cannot classify the transaction.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-rotate-no-version",
+      "description": "manifest-rotate without expectedVersion.",
+      "route": {
+        "op": "manifest-rotate",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-nv",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-rotate",
+        "txId": "tx-3"
+      },
+      "expect": "reject",
+      "reason": "expectedVersion binds the grant to a manifest that has not moved.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-recover-no-generation",
+      "description": "manifest-generation-recover without generation.",
+      "route": {
+        "op": "manifest-generation-recover",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-ng",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-generation-recover"
+      },
+      "expect": "reject",
+      "reason": "An unbound recovery grant reaches any archived generation.",
+      "sides": [
+        "issuer",
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-version-moved",
+      "description": "expectedVersion does not match the stored manifest version.",
+      "route": {
+        "op": "manifest-rotate",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-vm",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-rotate",
+        "expectedVersion": 3,
+        "txId": "tx-4"
+      },
+      "expect": "reject",
+      "reason": "Stored version is 5. A captured grant must not apply to a manifest that has moved (412).",
+      "sides": [
+        "verifier"
+      ]
+    },
+    {
+      "id": "reject-jti-replay",
+      "description": "Destructive grant whose jti was already consumed.",
+      "route": {
+        "op": "manifest-rotate",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-used",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-rotate",
+        "expectedVersion": 4,
+        "txId": "tx-5"
+      },
+      "expect": "reject",
+      "reason": "Single-use. The jti is consumed atomically BEFORE any mutation, so a replay finds it spent and stored key material is unchanged.",
+      "sides": [
+        "verifier"
+      ],
+      "consumed_jti": [
+        "jti-used"
+      ]
+    },
+    {
+      "id": "accept-read-reuse",
+      "description": "Read grant reused within its expiry.",
+      "route": {
+        "op": "manifest-read",
+        "accountRef": "acct-1"
+      },
+      "claims": {
+        "iss": "identity-node",
+        "aud": "key-vault",
+        "sub": "acct-1",
+        "jti": "jti-used-read",
+        "iat": 1767225600,
+        "nbf": 1767225600,
+        "exp": 1767225900,
+        "op": "manifest-read"
+      },
+      "expect": "accept",
+      "reason": "Read grants may be multi-use within their short expiry; only destructive grants are single-use.",
+      "sides": [
+        "verifier"
+      ],
+      "consumed_jti": [
+        "jti-used-read"
+      ]
+    }
+  ]
+}
