@@ -10,6 +10,8 @@ declare(strict_types=1);
 
 namespace Starisian\Sparxstar\Sky\Contract;
 
+use Starisian\Sparxstar\Sky\Contract\SPXAbilityValidationOutcome;
+
 /**
  * One recorded attempt to invoke a WordPress ability.
  *
