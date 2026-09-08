@@ -9,6 +9,16 @@ Each release packages the canonical contracts + MANIFEST.json + version policy +
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- `dve/ability-audit` contract (`draft`): `SPXAbilityAuditEventInterface`, `SPXAbilityValidationOutcome`, `SPXAbilityAttemptSummarizerInterface`, plus `ability-audit-event.schema.json` and `redaction-vectors.json`.
+  Fixes the shape of an ability-attempt audit event and the redaction rules that govern it, for the two WordPress plugins that register abilities (`sparxstar-sky-hermes`, `sparxstar-sky-dve-core`). Those plugins are independently installable and cannot depend on one another, so the rules are shared here rather than the code.
+  `redaction-vectors.json` is an adversarial conformance suite both consumers must pass unmodified.
+
+---
+
 ## [1.0.0] — 2026-06-28
 
 ### Added

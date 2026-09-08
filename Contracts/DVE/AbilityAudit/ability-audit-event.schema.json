@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.starisian.com/DVE/AbilityAudit/ability-audit-event.schema.json",
+  "title": "Ability Audit Event",
+  "description": "One recorded attempt to invoke a WordPress ability. Emitted from wp_ability_invoked, which fires before the permission check and before input validation — so an event proves a caller asked, never that the call was permitted, valid, or executed.",
+  "type": "object",
+  "required": ["event_id", "correlation_id", "ability_name", "actor_ref", "event_version", "validation_outcome", "summary", "created_at"],
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identity. Redelivery MUST be idempotent on this value."
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Groups the phases of one attempt. Never reused, and stable when one ability invokes another."
+    },
+    "ability_name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9-]*$",
+      "description": "Namespaced ability name. A recorder MUST ignore names outside its own namespace: wp_ability_invoked is global, so an unfiltered recorder double-counts every other plugin's invocations."
+    },
+    "actor_ref": {
+      "type": "string",
+      "description": "Opaque caller reference. MUST NOT be an email address, login name, or other directly identifying value."
+    },
+    "network_id": { "type": "integer", "minimum": 0, "description": "Multisite network id; 0 on single-site." },
+    "blog_id": { "type": "integer", "minimum": 0, "description": "Site id within the network." },
+    "event_version": { "type": "integer", "minimum": 1 },
+    "validation_outcome": {
+      "type": "string",
+      "enum": ["pending", "valid", "invalid"],
+      "description": "Two-phase. Written 'pending' at invocation and resolved when wp_ability_validate_input reports. Still 'pending' at delivery means validation never reported — a real outcome, which MUST NOT be rewritten."
+    },
+    "summary": { "$ref": "#/$defs/summary" },
+    "status": { "type": "string", "enum": ["pending", "delivered", "abandoned"] },
+    "attempts": { "type": "integer", "minimum": 0 },
+    "created_at": { "type": "string", "description": "UTC timestamp of the attempt." },
+    "delivered_at": { "type": ["string", "null"] },
+    "next_attempt_at": { "type": ["string", "null"] }
+  },
+  "$defs": {
+    "summary": {
+      "type": "object",
+      "description": "The ONLY representation of ability input permitted to leave memory. Raw input is never stored in any form.",
+      "required": ["type", "bytes", "digest", "shape", "redaction"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "description": "PHP type of the input, nothing more." },
+        "bytes": { "type": "integer", "minimum": 0, "description": "Byte length of the input's JSON encoding. Size distinguishes a normal call from an attempt to flood the audit path." },
+        "digest": { "type": "string", "description": "Keyed hash of the JSON encoding, using a site-local secret that is never itself recorded. MUST NOT be a bare hash: an unkeyed digest of a short or low-entropy input is reversible by brute force." },
+        "shape": { "description": "Recursive structure with every value removed, bounded in depth and breadth. Key names are retained as the diagnostic content, except where a key is itself sensitive." },
+        "redaction": { "type": "string", "description": "Human-readable statement of the guarantee, so an operator reading a stored row can see what it does and does not hold." }
+      }
+    }
+  }
+}

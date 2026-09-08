@@ -4,11 +4,16 @@
   "MD041": false,
   "overrides": [
     {
-      "files": ["README.md"],
+      "files": [
+        "README.md"
+      ],
       "rules": {
         "MD033": false,
         "MD036": false
       }
     }
-  ]
+  ],
+  "MD024": {
+    "siblings_only": true
+  }
 }
