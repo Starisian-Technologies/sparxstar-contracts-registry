@@ -169,24 +169,49 @@ export interface AccountXpResponse {
 
 /* ───────────────────────────────── REST: §3.3 ────────────────────────────── */
 
+/**
+ * THE FULL CLASS, RANKED — not a top ten.
+ *
+ * A classroom board is read by the class it lists. Showing ten of thirty
+ * learners tells the other twenty only that they are not on it, in a room where
+ * they can see who is. Every enrolled learner appears, including one who has
+ * earned nothing yet: absent from a board and last on a board are different
+ * messages, and only one of them is true.
+ *
+ * NO `account_id`. This response used to carry one. A leaderboard is a display
+ * surface and an account id is an identifier — a teacher who needs to act on a
+ * learner has the roster routes, which is where addressing a student belongs.
+ */
 export interface ClassLeaderboardResponse {
   class_id: string
   total_xp: number
+  window: StatsWindow
+  window_started_at: number | null
+  generated_at: number
   students: Array<{
-    account_id: string
     screen_name: string
-    lifetime_xp: number
-    session_xp: number
+    xp: number
+    rank: number
+    tied: boolean
+    movement: RankMovement
   }>
 }
+/** Ranks CLASSES, never the children in them. */
 export interface SchoolLeaderboardResponse {
   school_id: string
   total_xp: number
-  classes: Array<{ class_id: string; name: string; total_xp: number }>
+  window: StatsWindow
+  window_started_at: number | null
+  generated_at: number
+  classes: Array<{ class_id: string; name: string; total_xp: number; rank: number; tied: boolean }>
 }
+/** Ranks SCHOOLS, never the children in them. */
 export interface NationalLeaderboardResponse {
   country: string
-  schools: Array<{ school_id: string; name: string; total_xp: number; rank: number }>
+  window: StatsWindow
+  window_started_at: number | null
+  generated_at: number
+  schools: Array<{ school_id: string; name: string; total_xp: number; rank: number; tied: boolean }>
 }
 
 /* ───────────────────────────────── REST: §3.4 ────────────────────────────── */
@@ -234,7 +259,16 @@ export interface SessionStatusResponse {
   participant_count: number
   token_count: number
   time_remaining_seconds: number
-  leaderboard: Array<{ participant_id: string; screen_name: string; session_xp: number }>
+  leaderboard: Array<{
+    participant_id: string
+    screen_name: string
+    session_xp: number
+    /** Competition rank (1, 2, 2, 4), computed by the server. Clients render
+     *  it; they must never derive one from array position — that silently
+     *  breaks a tie in favour of whichever row arrived first. */
+    rank: number
+    tied: boolean
+  }>
   class_xp_total: number
   participant_token?: string
 }
@@ -302,7 +336,17 @@ export interface CeremonyStarEvent extends Star {
 }
 export interface AwardsResponse {
   stars: Star[]
-  leaderboard: Array<{ participant_id: string; screen_name: string; tokens: number; session_xp: number }>
+  leaderboard: Array<{
+    participant_id: string
+    screen_name: string
+    tokens: number
+    session_xp: number
+    /** Competition rank (1, 2, 2, 4), computed by the server. The ceremony is
+     *  read aloud — a tie broken by array position is announced as a placing
+     *  nobody earned. */
+    rank: number
+    tied: boolean
+  }>
   total_tokens: number
   discovery_count: number
 }
@@ -415,6 +459,11 @@ export interface GameResultPayload {
   // guarantee the runtime doesn't enforce.
   attempts?: number
   time_ms?: number
+  /** The language this run is played in, for language-scoped leaderboards
+   *  (NODE-ADR-011). Optional and additive — a game with no language dimension
+   *  omits it and its ledger rows stay language-agnostic. Ignored for classroom
+   *  play, where the session's language is authoritative. */
+  language?: string
 }
 export interface BatchRequest {
   events: BatchEvent[]
@@ -497,6 +546,162 @@ export interface AccountLedgerResponse {
   totals: LedgerTotals
   entries: LedgerEntry[]
 }
+
+/* ──────────────────── Stats & leaderboards: NODE-ADR-011 ─────────────────── */
+
+/**
+ * Ranking window. `weekly` is `created_at >= ` the most recent Monday 00:00
+ * **UTC**; `all_time` has no lower bound. There is no reset job — the window is
+ * computed at query time over immutable ledger rows, so last week's board is
+ * still computable.
+ *
+ * UTC and not school-local: school-local is the better boundary and is blocked
+ * on a `schools.timezone` column that identity-node owns (NODE-ADR-011 §4).
+ * Every school deployed today is UTC+00:00 with no daylight saving, so the two
+ * currently coincide — but a consumer must not assume otherwise.
+ */
+export type StatsWindow = 'weekly' | 'all_time'
+
+/** Skill band for board separation. Resolves to `accounts.tier` (NODE-ADR-011
+ *  §3). A finer AiWA Semantic Scaffold band is AIWA's authority and is not
+ *  assumed here. */
+export type SkillBand = Tier
+
+/**
+ * One leaderboard row. PSEUDONYMOUS BY CONSTRUCTION — there is no `account_id`
+ * field and one must never be added. The caller's own row is marked `is_self`;
+ * the client already knows its own id, so returning it would buy nothing and
+ * turn a public board into a screen-name-to-account-id mapping table.
+ *
+ * EVERY LEARNER IS RANKED. An earlier revision of this comment said the board
+ * was adults-only and that minor tiers were excluded by a data rule. Both the
+ * rule and that framing are gone: the board is scoped by POPULATION
+ * (`BoardAudience` in models/stats.ts), derived from the caller's own account,
+ * so a learner ranks inside their class and the only board spanning schools
+ * holds accounts that have none. Nothing filters by age.
+ *
+ * `band` narrows within that population; an absent one resolves to the
+ * caller's own rather than to "every band".
+ *
+ * SCOPE: the classroom boards (`ClassLeaderboardResponse` and friends) are
+ * separate endpoints with a teacher/admin role check. They no longer carry
+ * `account_id` either — a leaderboard is a display surface, and a teacher who
+ * needs to act on a learner uses the roster routes.
+ */
+/**
+ * Which way a row has moved since the previous comparable period.
+ *
+ * SERVER-CALCULATED, ALWAYS. A client cannot derive this: it would need the
+ * prior period's board, which it is never sent. A client that diffed its own
+ * last response instead would be reporting "movement since you last looked",
+ * which changes with how often the learner opens the app.
+ *
+ * `new` means not ranked in the prior period — the true answer in a first week
+ * and in a session's first round, not a missing value.
+ */
+export type RankMovement = 'up' | 'down' | 'unchanged' | 'new'
+
+/**
+ * Which population `GET /leaderboard` ranks. These four and no others — the
+ * route rejects anything else.
+ *
+ * `school` and `national` are deliberately NOT here. They rank classes and
+ * schools rather than individuals, have a different row shape entirely, and
+ * live on their own endpoints (§3.3). Listing them in this union would tell a
+ * client they were valid values for a request that refuses them.
+ */
+export type BoardScopeName = 'session' | 'class' | 'game' | 'all_games'
+
+export interface LeaderboardEntry {
+  rank: number
+  screen_name: string
+  xp: number
+  /** True on the calling account's own row, when it appears on this page. */
+  is_self: boolean
+  /** True when at least one other row shares this rank. Stated rather than left
+   *  for the client to infer from repeated numbers, so the UI can label a tie
+   *  without counting. */
+  tied: boolean
+  movement: RankMovement
+}
+
+/**
+ * GET /leaderboard?window=&game_type=&language=&band=&limit=&cursor=
+ * Authenticated (any player), owner-scoped to nothing — this is a shared view.
+ *
+ * Ties rank equal (competition ranking: 1, 2, 2, 4). Within a tie, rows are
+ * ordered by screen name so the page order is deterministic; that ordering is
+ * not a ranking claim and the equal `rank` says so.
+ */
+export interface LeaderboardResponse {
+  window: StatsWindow
+  scope: BoardScopeName
+  /** null = every registered game combined. */
+  game_type: string | null
+  /** null = every language, including ledger rows written before the language
+   *  column existed. */
+  language: string | null
+  /** null = every band combined. */
+  band: SkillBand | null
+  entries: LeaderboardEntry[]
+  /** Opaque keyset cursor for the next page; null when this is the last page. */
+  next_cursor: string | null
+  /**
+   * The caller's own row plus its immediate neighbours, present only when the
+   * caller is ranked and NOT on the returned page.
+   *
+   * A top-ten board on its own tells a learner ranked 47th only that they are
+   * not on it. This is what lets the client show them 45th-49th instead: a
+   * position they hold and a next place they can reach.
+   */
+  self_context: LeaderboardEntry[] | null
+  /** Lower bound of the ranking window (epoch ms), or null for all-time. */
+  window_started_at: number | null
+  /** When the server computed this board (epoch ms). */
+  generated_at: number
+}
+
+/** One window's worth of the caller's own numbers. */
+export interface SelfStatsWindow {
+  xp: number
+  /** Distinct runs of question-answering games (Dictionary Games today). RLC
+   *  classroom collection produces tokens, not answered questions, so it does
+   *  not move this — `xp` and `stars` are the measures that span both. */
+  games_played: number
+  /** Correct answers / answered questions, 0..1. null when nothing has been
+   *  answered in this window — never silently reported as 0, which would read
+   *  as "you got everything wrong". */
+  accuracy: number | null
+  /** Rank on the board the caller actually appears on — their class, their
+   *  school, or the school-less board. null when the caller has no ranked XP in
+   *  this window. */
+  rank: number | null
+}
+
+/**
+ * GET /account/:id/stats — authenticated, OWNER ONLY.
+ *
+ * Unlike the leaderboard this is the caller's own record, so it does carry
+ * `account_id` — the caller already knows it, and this response goes nowhere
+ * else.
+ *
+ * `rank` is the rank on the board the caller actually appears on. There is no
+ * opt-out in the engine today (NODE-ADR-011 §7), so there is no opted-out case
+ * for this response to have a position on. Whenever the owner-approved
+ * teacher-controlled control is built, the rule it must keep is that being
+ * hidden from a public board never costs a learner sight of their own progress.
+ */
+export interface AccountStatsResponse {
+  account_id: string
+  screen_name: string
+  band: SkillBand
+  weekly: SelfStatsWindow
+  all_time: SelfStatsWindow
+  stars: number
+  badges: number
+  gold: number
+}
+
 
 /* ─────────────────────────── WebSocket: §4 events ────────────────────────── */
 

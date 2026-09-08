@@ -113,6 +113,67 @@ app root and has no `/api/v1` prefix.
 | GET | `/account/:id/xp` | participant (owner) | → `AccountXpResponse` `{ account_id, lifetime_xp, lifetime_gold }` |
 | GET | `/account/:id/ledger?limit=N` | participant (owner) | → `AccountLedgerResponse` (default 50, max 200; newest first) |
 
+### Player stats & cross-game leaderboards (NODE-ADR-011)
+
+Distinct from the classroom boards above. Mounted in every release profile —
+solo play and Dictionary Games are the audience.
+
+> **EVERY LEARNER IS RANKED, AND NO INDIVIDUAL CROSSES A SCHOOL BOUNDARY.**
+> Boards are scoped by POPULATION, derived from the caller's own account and
+> never from the request: a caller with a class ranks in that class, one with a
+> school but no class ranks in that school, and one with no school ranks among
+> accounts that have none. Nothing filters by age.
+>
+> An earlier revision excluded minor tiers. That is superseded by the owner
+> ruling of 2026-09-07 — minors appear by screen name, participation on by
+> default. A cross-school board **of individuals** still requires separate
+> approval, and none is served. **There is no opt-out on any board**; the
+> teacher-controlled one the ruling asks for is specified and not built.
+
+| Method | Path | Auth | Request → Response |
+| :----- | :--- | :--- | :----------------- |
+| GET | `/account/:id/stats` | participant **or** suite (owner) | → `AccountStatsResponse` (both windows in one response) |
+| GET | `/leaderboard?scope=&window=&game_type=&language=&band=&limit=&cursor=&session_id=` | participant **or** suite (the account decides the population) | → `LeaderboardResponse` |
+
+`LeaderboardEntry` is `{ rank, screen_name, xp, is_self, tied, movement }` —
+**there is no `account_id`**, not even on the caller's own row.
+
+`scope` is `session | class | game | all_games`; `school` and `national` rank
+classes and schools on their own endpoints (above) and are not values here.
+`scope=game` requires `game_type`, `all_games` forbids it, `session` requires
+`session_id` and 403s a caller who did not play in it. An unregistered
+`game_type` is `400 game_type_unknown`, never an empty board.
+
+Ties rank equal (1, 2, 2, 4) and `tied` says so. `movement`
+(`up|down|unchanged|new`) is server-computed against the previous completed
+week, the start of the current week, or the last completed QC round depending on
+scope — a client is never sent the prior board and cannot derive it.
+
+`LeaderboardResponse` also carries `self_context` (the caller's own row and its
+neighbours, present only when they are ranked but not on the returned page),
+`window_started_at` and `generated_at`.
+
+Paging is keyset over an opaque `next_cursor`; a malformed or stale cursor is
+`400 cursor_invalid`, never a silent page 1. The cursor keys on XP rather than
+rank, because rank moves when someone else earns. `window=weekly` is bounded
+below by the most recent Monday 00:00 **UTC**, computed at query time — there is
+no reset job.
+
+`SelfStatsWindow.accuracy` is `0..1` or **null** when nothing was answered
+(never 0, which reads as "you got everything wrong"); the `learning` outcome is
+excluded from both sides of the ratio.
+
+`games_played` and `accuracy` measure **question-answering games only** — they
+come from per-question `game.result` settlement (Dictionary Games today). RLC
+classroom collection produces tokens and votes, not answered questions, so it
+moves `xp` and `stars` but deliberately not these two: there is no defensible
+answer to "what fraction of a word submission was correct".
+
+`GameResultPayload` accepts an optional **`language`**, the language a run is
+played in, so a solo game's rewards reach that language's board. Ignored for
+classroom play, where the session's language is authoritative. `AccountStatsResponse.badges` is always
+0 today — nothing awards badges yet.
+
 ### Sessions
 
 | Method | Path | Auth | Request → Response |
