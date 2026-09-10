@@ -4,6 +4,10 @@
 
 # SPARXSTAR Platform Contracts
 
+> **Setting up a repo to consume these contracts? Read [`SETUP.md`](./SETUP.md).**
+> New repo from scratch? Start with `GOVERNANCE-SETUP.md` in `starisian-technologies-proprietary-license`.
+
+
 Starisian Technologies © 2026. All Rights Reserved.
 
 ---
