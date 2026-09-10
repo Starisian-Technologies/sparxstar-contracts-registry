@@ -4,6 +4,9 @@
 
 # SPARXSTAR Platform Contracts
 
+> **Setting up a repo to consume these contracts? Read [`SETUP.md`](./SETUP.md).**
+> New repo from scratch? Start with [`GOVERNANCE-SETUP.md`](https://github.com/Starisian-Technologies/starisian-technologies-proprietary-license/blob/main/GOVERNANCE-SETUP.md) in `starisian-technologies-proprietary-license`.
+
 Starisian Technologies © 2026. All Rights Reserved.
 
 ---
@@ -142,10 +145,14 @@ The exact reusable-workflow reference a consumer writes:
 uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@<ref>
 ```
 
-**Live tag status:** `v1.0.0` and `v1` both resolve today; `v1.0.0` is the immutable
-release pin, while `v1` is the moving major alias currently pointing at the same commit.
+**Live tag status (read 2026-09-10):** the published immutable tags are `v1.0.0`,
+`v1.0.1` and `v1.0.2`. The moving major alias `v1` currently resolves to the same
+commit as `v1.0.2` — **not** to `v1.0.0`, as an earlier revision of this section
+claimed. Read the current list with `git ls-remote --tags origin` rather than from
+this paragraph; a tag list written into prose goes stale the next time one is cut.
 
-- Use `@v1.0.0` for production conformance gating (immutable).
+- Use the highest published immutable patch tag (`@v1.0.2` today) for production
+  conformance gating.
 - Use `@v1` only when you intentionally accept movement within major version 1.
 - `@main` remains mutable and is for experimentation, not production pinning.
 
@@ -213,9 +220,9 @@ permissions:
 
 jobs:
   contract-conformance:
-    # Substitute the ref once tags exist: pin @v1.0.0. Until then @main is the only
-    # resolvable ref (mutable — not for production gating).
-    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@main
+    # Pin the highest published patch tag. Read the current list with
+    # `git ls-remote --tags origin` — never @main in production gating.
+    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@v1.0.2
     with:
       enforcement_mode: advisory # advisory (warn) | gate (block) — earn the gate
       # contracts: "iamc/helios"   # optional: restrict to specific MANIFEST ids
@@ -224,8 +231,13 @@ jobs:
       COMPOSER_RESOLVER_PRIVATE_KEY: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
 ```
 
-Substitute: the `@<ref>` (use `@v1.0.0` once it is tagged) and, optionally, the
-commented inputs. Everything else is read from the live gate.
+Substitute: the `@<ref>` (the highest published patch tag — `v1.0.2` today)
+and, optionally, the commented inputs. Everything else is read from the live
+gate.
+
+> An earlier revision of this block said tags did not yet exist and used
+> `@main`. `v1.0.0`, `v1.0.1` and `v1.0.2` were all published; a consumer
+> following it wired production gating to a mutable ref.
 
 ## 7. Sequencing rule (this gate is called cross-repo)
 
