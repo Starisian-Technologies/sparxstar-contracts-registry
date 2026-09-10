@@ -8,11 +8,11 @@ their source repos**, versioned, and carry a ratification status.
 workflows themselves mint tokens to read private sources, so consumers still
 pass the resolver key.
 
-> **New repo?** The `starisian-technologies-proprietary-license` template is
-> gaining a setup checklist (`GOVERNANCE-SETUP.md`) that sequences all five
-> governance repos, plus a pre-wired caller — both on that repo's open
-> governance-wiring PR, **not yet on its default branch**. Check there first;
-> this file documents *this* repo's interface only.
+> **New repo?** Do not start here. Start with
+> [`GOVERNANCE-SETUP.md`](https://github.com/Starisian-Technologies/starisian-technologies-proprietary-license/blob/main/GOVERNANCE-SETUP.md)
+> in the `starisian-technologies-proprietary-license` template, which
+> sequences all five governance repos. This file documents *this* repo's
+> interface only.
 
 ---
 
@@ -138,7 +138,7 @@ Do not restate the mint block here.
 
 | You need | Go to |
 |---|---|
-| Wiring a brand-new repo, end to end | `starisian-technologies-proprietary-license` → `GOVERNANCE-SETUP.md` — *landing on that repo's open governance-wiring PR; not yet on its default branch* |
+| Wiring a brand-new repo, end to end | `starisian-technologies-proprietary-license` → `GOVERNANCE-SETUP.md` |
 | Cross-repo auth | product-spec registry → `SPARXSTAR-CROSS-REPO-ACCESS-STANDARD.md` |
 | ADRs, invariants, contract *documents* | `sparxstar-architecture-governance-registry` → `SETUP.md` |
 | Lint/style enforcement | `sparxstar-code-conformance` → `REUSABLE-WORKFLOWS.md` |

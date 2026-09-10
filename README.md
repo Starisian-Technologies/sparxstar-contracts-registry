@@ -5,7 +5,7 @@
 # SPARXSTAR Platform Contracts
 
 > **Setting up a repo to consume these contracts? Read [`SETUP.md`](./SETUP.md).**
-> New repo from scratch? A setup checklist is landing in `starisian-technologies-proprietary-license` on its open governance-wiring PR — not yet on that repo's default branch.
+> New repo from scratch? Start with [`GOVERNANCE-SETUP.md`](https://github.com/Starisian-Technologies/starisian-technologies-proprietary-license/blob/main/GOVERNANCE-SETUP.md) in `starisian-technologies-proprietary-license`.
 
 Starisian Technologies © 2026. All Rights Reserved.
 
