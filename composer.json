@@ -9,7 +9,10 @@
     "autoload": {
         "psr-4": {
             "SparxStar\\Helios\\": "Contracts/IAMC/Helios/",
-            "Starisian\\Sparxstar\\Sky\\Contract\\": "Contracts/DVE/Sky-Esu/"
+            "Starisian\\Sparxstar\\Sky\\Contract\\": [
+                "Contracts/DVE/Sky-Esu/",
+                "Contracts/DVE/AbilityAudit/"
+            ]
         }
     },
     "minimum-stability": "stable"
