@@ -220,9 +220,9 @@ permissions:
 
 jobs:
   contract-conformance:
-    # Substitute the ref once tags exist: pin @v1.0.0. Until then @main is the only
-    # resolvable ref (mutable — not for production gating).
-    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@main
+    # Pin the highest published patch tag. Read the current list with
+    # `git ls-remote --tags origin` — never @main in production gating.
+    uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@v1.0.2
     with:
       enforcement_mode: advisory # advisory (warn) | gate (block) — earn the gate
       # contracts: "iamc/helios"   # optional: restrict to specific MANIFEST ids
@@ -231,8 +231,13 @@ jobs:
       COMPOSER_RESOLVER_PRIVATE_KEY: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
 ```
 
-Substitute: the `@<ref>` (use `@v1.0.0` once it is tagged) and, optionally, the
-commented inputs. Everything else is read from the live gate.
+Substitute: the `@<ref>` (the highest published patch tag — `v1.0.2` today)
+and, optionally, the commented inputs. Everything else is read from the live
+gate.
+
+> An earlier revision of this block said tags did not yet exist and used
+> `@main`. `v1.0.0`, `v1.0.1` and `v1.0.2` were all published; a consumer
+> following it wired production gating to a mutable ref.
 
 ## 7. Sequencing rule (this gate is called cross-repo)
 

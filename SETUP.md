@@ -35,11 +35,21 @@ seam, that came from the ADR registry's sync. If you are implementing an
 
 Reusable. The main gate a consumer wires up.
 
+**Trigger this from `pull_request`, never `pull_request_target`** — the gate
+checks out PR-head code, and `pull_request_target` would run it with a
+read-write token in the base-repo context. The caller job needs
+`contents: read`.
+
 ```yaml
   contracts:
     uses: Starisian-Technologies/sparxstar-contracts-registry/.github/workflows/contract-conformance.yml@v1.0.2
+    permissions:
+      contents: read
     with:
-      consumer: <your-repo-name>
+      # `consumer` is omitted deliberately. It takes owner/repo and is matched
+      # against MANIFEST bindings by exact string, so a bare repo name matches
+      # nothing and the run reports "no contracts matched". Omitted, it
+      # defaults to the caller, which is what you want.
       enforcement_mode: advisory
     secrets:
       COMPOSER_RESOLVER_PRIVATE_KEY: ${{ secrets.COMPOSER_RESOLVER_PRIVATE_KEY }}
@@ -108,9 +118,16 @@ pending and not unpublished. Any `packages/` stub directory left in a consumer
 repo is obsolete scaffolding — delete it and install the real package through
 the documented auth path.
 
-There is **no** `wordpress/mcp-adapter` package on Packagist. It does not
-exist; it was invented by an AI and has been referenced in this org before.
-Never add it.
+**`wordpress/mcp-adapter` is real — do not remove it.** A standing governance
+instruction asserted that it does not exist on Packagist and was invented by
+an AI. **ADR-027 (Accepted, 2026-09-04) withdraws that instruction as false**,
+after Packagist verification returned seven published versions and confirmed
+`sparxstar-sky-hermes` requires it, resolves it in `composer.lock`, and uses
+its classes. No repository may remove the dependency on the basis of the old
+instruction.
+
+The narrower true rule that replaces it: **verify a package against Packagist
+before adding it, and never introduce a dependency on an unverified name.**
 
 ---
 
